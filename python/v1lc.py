@@ -1,11 +1,9 @@
 import serial
-import time
 
 class LensController(object):
     """
     V1LC lens controller class.
     """
-    
     def __init__(self, port):
         """
         Constructor.
@@ -21,10 +19,10 @@ class LensController(object):
     def query_status(self):
         """
         Query the status of the zoom, focus, and iris of the lens.
-        
-        @rtype: List{int}
+       
+        @return: Status of the lens controller.
+        @rtype: C{tuple} of C{int}
         """
-        
         self.port.flushInput()
         self.port.write('?\n')
         state = []
@@ -45,7 +43,6 @@ class LensController(object):
 
         @rtype: C{int}
         """
-        
         z, f, i = self.query_status()
         return z
         
@@ -56,7 +53,6 @@ class LensController(object):
 
         @rtype: C{int}
         """
-        
         z, f, i = self.query_status()
         return f
         
@@ -108,4 +104,3 @@ class LensController(object):
             self.port.write('I100\n')
         else:
             print 'The only options are \'close\' and \'open\'.'
-    
