@@ -1,0 +1,12 @@
+keybindings:
+    f2:           coverage
+    f6:           name
+    f7:           axes
+    f8:           cdot
+    f11:          camview
+    left:         sc -250 0 0
+    right:        sc 250 0 0
+    down:         sc 0 -250 0
+    up:           sc 0 250 0
+    page down:    sc 0 0 -250
+    page up:      sc 0 0 250

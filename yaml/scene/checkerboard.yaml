@@ -1,0 +1,877 @@
+description:    Checkerboard
+
+primitives:
+    # cardboard
+    - type:         box
+      pos:          [0, 2, 0]
+      length:       276
+      height:       226
+      width:        2
+      color:        [0.74, 0.67, 0.53]
+      material:     wood
+    - type:         box
+      pos:          [156, -83, 0]
+      length:       36
+      height:       56
+      width:        2
+      color:        [0.74, 0.67, 0.53]
+      material:     wood
+    - type:         box
+      pos:          [156, 86, 0]
+      length:       36
+      height:       58
+      width:        2
+      color:        [0.74, 0.67, 0.53]
+      material:     wood
+    # squares
+    - type:         box
+      pos:          [-123.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-123.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-123.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-123.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-123.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-123.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-123.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-123.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-123.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-123.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-104.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-104.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-104.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-104.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-104.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-85.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-85.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-85.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-85.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-85.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-66.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-66.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-66.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-66.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-66.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-47.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-47.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-47.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-47.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-47.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-28.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-28.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-28.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-28.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-28.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-9.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-9.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-9.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [-9.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [-9.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [9.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [9.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [9.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [9.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [9.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [28.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [28.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [28.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [28.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [28.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [47.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [47.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [47.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [47.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [47.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [66.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [66.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [66.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [66.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [66.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [85.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [85.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [85.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [85.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [85.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [104.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [104.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [104.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [104.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [104.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, -85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, -66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [123.5, -47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, -28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [123.5, -9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, 9.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [123.5, 28.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, 47.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+    - type:         box
+      pos:          [123.5, 66.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [1, 1, 1]
+    - type:         box
+      pos:          [123.5, 85.5, 1]
+      length:       19
+      height:       19
+      width:        1.2
+      color:        [0, 0, 0]
+
+planes:
+    - x:            [-138, 138]
+      y:            [-111, 115]
+      z:            0
+    - x:            [138, 174]
+      y:            [-111, -55]
+      z:            0
+    - x:            [138, 174]
+      y:            [57, 115]
+      z:            0

@@ -1,0 +1,111 @@
+model:
+    name:           OCR Experiment for PAMI
+
+    gamma:          0.01
+    r1:             2.8
+    r2:             0.7
+    cmax:           1.0
+    zeta1:          0.70
+    zeta2:          0.98
+
+    cameras:
+        - name:         CAC
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.4765
+          f:            12.253
+          s:            0.00465
+          o:            [763.00966, 579.1370]
+          dim:          [1360, 1024]
+          zS:           1252.15
+          mount:        RV1A
+          pose:
+              T:            [133.50566, -398.3419, 1551.4979]
+              R:            [-3.5145, -0.0514, -4.7455]
+              Rformat:      euler-zyx-rad
+        - name:         C35
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.4765
+          f:            12.1563
+          s:            0.00465
+          o:            [750.84736, 578.7544]
+          dim:          [1360, 1024]
+          zS:           1237.28
+          mount:        RV1A
+          pose:
+              T:            [75.820068, 264.97696, 1328.1721]
+              R:            [-3.0350, -0.0235, -4.3633]
+              Rformat:      euler-zyx-rad
+
+    scene:
+        - name:         VisionPlatform
+          sprites:      [scene/visionplatform.yaml]
+          pose:
+              T:            [-978, -455, -553]
+              R:            [0, 0, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         RV1A
+          robot:        robots/mitsubishirv1a.yaml
+          mount:        VisionPlatform
+          config:       [0.15, -0.16, 90.22, -0.31, -0.14, 0.06, 8.0]
+          pose:
+              T:            [978, 455, 553]
+              R:            [0, 0, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         Target
+          x:            [-108, 108]
+          y:            [-140, 140]
+          z:            0
+          mount:        RV1A
+
+relevance:
+    - name:         target
+      mount:        Target
+      points:
+        - point:        [-100, -140, 0, 0, 0]
+        - point:        [-100, -100, 0, 0, 0]
+        - point:        [-100, -60, 0, 0, 0]
+        - point:        [-100, -20, 0, 0, 0]
+        - point:        [-100, 20, 0, 0, 0]
+        - point:        [-100, 60, 0, 0, 0]
+        - point:        [-100, 100, 0, 0, 0]
+        - point:        [-100, 140, 0, 0, 0]
+        - point:        [-60, -140, 0, 0, 0]
+        - point:        [-60, -100, 0, 0, 0]
+        - point:        [-60, -60, 0, 0, 0]
+        - point:        [-60, -20, 0, 0, 0]
+        - point:        [-60, 20, 0, 0, 0]
+        - point:        [-60, 60, 0, 0, 0]
+        - point:        [-60, 100, 0, 0, 0]
+        - point:        [-60, 140, 0, 0, 0]
+        - point:        [-20, -140, 0, 0, 0]
+        - point:        [-20, -100, 0, 0, 0]
+        - point:        [-20, -60, 0, 0, 0]
+        - point:        [-20, -20, 0, 0, 0]
+        - point:        [-20, 20, 0, 0, 0]
+        - point:        [-20, 60, 0, 0, 0]
+        - point:        [-20, 100, 0, 0, 0]
+        - point:        [-20, 140, 0, 0, 0]
+        - point:        [20, -140, 0, 0, 0]
+        - point:        [20, -100, 0, 0, 0]
+        - point:        [20, -60, 0, 0, 0]
+        - point:        [20, -20, 0, 0, 0]
+        - point:        [20, 20, 0, 0, 0]
+        - point:        [20, 60, 0, 0, 0]
+        - point:        [20, 100, 0, 0, 0]
+        - point:        [20, 140, 0, 0, 0]
+        - point:        [60, -140, 0, 0, 0]
+        - point:        [60, -100, 0, 0, 0]
+        - point:        [60, -60, 0, 0, 0]
+        - point:        [60, -20, 0, 0, 0]
+        - point:        [60, 20, 0, 0, 0]
+        - point:        [60, 60, 0, 0, 0]
+        - point:        [60, 100, 0, 0, 0]
+        - point:        [60, 140, 0, 0, 0]
+        - point:        [100, -140, 0, 0, 0]
+        - point:        [100, -100, 0, 0, 0]
+        - point:        [100, -60, 0, 0, 0]
+        - point:        [100, -20, 0, 0, 0]
+        - point:        [100, 20, 0, 0, 0]
+        - point:        [100, 60, 0, 0, 0]
+        - point:        [100, 100, 0, 0, 0]
+        - point:        [100, 140, 0, 0, 0]
