@@ -1,4 +1,14 @@
+"""\
+V1LC lens controller module.
+
+@author: Jose Luis Alarcon Herrera
+@organization: University of Windsor
+@contact: alarconj@uwindsor.ca
+@license: GPL-3
+"""
+
 import serial
+
 
 class LensController(object):
     """
