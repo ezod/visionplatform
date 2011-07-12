@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="153632882">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_update_off()</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
+<l>path:= 'C:/Users/Durga Rajan/Desktop/pose_tracking/'</l>
+<l>read_descriptor_model(path+'model.dsm', ModelID)</l>
+<l>open_socket_connect('localhost', 5678, ['timeout','protocol'], ['infinite','TCP'], osock)</l>
+<l>cam := 'AB9'</l>
+<l>active := 0</l>
+<l>while (1)</l>
+<l>    if(active = 0)</l>
+<l>        open_cam(AcqHandle, cam)</l>
+<l>        active := 1</l>
+<l>    endif</l>
+<l>    read_cam_par(par_path+'parameters/internal_'+cam+'.cal', campar)</l>
+<l>    track (AcqHandle, campar, ModelID, win, Pose)</l>
+<l>    if (Pose = [])</l>
+<l>        continue</l>
+<l>    endif</l>
+<l>    tuple_string(Pose, '.4e', posestrings)</l>
+<l>    outstring := cam</l>
+<l>    for i := 0 to 5 by 1</l>
+<l>        outstring := outstring + ',' + posestrings[i]</l>
+<l>    endfor</l>
+<l>    send_data(osock, 'z', outstring, [])</l>
+<l>    receive_data(osock, 'z', newcam, from)</l>
+<l>    if (newcam # cam)</l>
+<l>       close_framegrabber(AcqHandle)</l>
+<l>       active := 0</l>
+<l>       cam := newcam</l>
+<l>    endif</l>
+<l>endwhile</l>
+<l>close_socket(osock)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="track">
+<interface>
+<ic>
+<par name="AcqHandle"/>
+<par name="campar"/>
+<par name="ModelID"/>
+<par name="win"/>
+</ic>
+<oc>
+<par name="Pose"/>
+</oc>
+</interface>
+<body>
+<l>dev_set_color ('green')</l>
+<l>grab_image_start (AcqHandle, -1)</l>
+<l>grab_image_async (Image, AcqHandle, -1)</l>
+<l>get_pose (Image, campar, ModelID, Pose, Score)</l>
+<l>if (|Score| &gt; 0)</l>
+<l>    dev_display(Image)</l>
+<l>    disp_3d_coord_system (win, campar, Pose, 0.11)</l>
+<l>else</l>
+<l>    dev_display(Image)</l>
+<l>    disp_message(win, 'Target not found', 'window', 12, 12, 'black', 'true')</l>
+<l>endif</l>
+<l>return ()</l>
+</body>
+<docu id="track">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="ModelID"/>
+<parameter id="Pose"/>
+<parameter id="campar"/>
+<parameter id="win"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="open_cam">
+<interface>
+<oc>
+<par name="AcqHandle"/>
+<par name="cam"/>
+</oc>
+</interface>
+<body>
+<l>open_framegrabber ('1394IIDC', 1, 1, 0, 0, 0, 0, 'progressive', 8, 'default', -1, 'false', 'default', '000F310000006'+cam, 0, -1, AcqHandle)</l>
+<l>set_framegrabber_param (AcqHandle, 'camera_type', '7:0:1')</l>
+<l>set_framegrabber_param (AcqHandle, 'video_gain', 1)</l>
+<l>set_framegrabber_param (AcqHandle, 'shutter', 400)</l>
+<l>set_framegrabber_param (AcqHandle, 'grab_timeout', 3000)</l>
+<l>return ()</l>
+</body>
+<docu id="open_cam">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="cam"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
