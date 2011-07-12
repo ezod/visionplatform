@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0" cs="756058814">
+<procedure name="get_pose">
+<interface>
+<io>
+<par name="Image"/>
+</io>
+<ic>
+<par name="CamParam"/>
+<par name="DescriptorHandle"/>
+</ic>
+<oc>
+<par name="Final_Pose"/>
+<par name="Score"/>
+</oc>
+</interface>
+<body>
+<l>get_image_pointer1 (Image, Pointer, Type, Width, Height)</l>
+<l>gen_rectangle1 (roi,0,0,Height-1,Width-1)</l>
+<l>change_radial_distortion_cam_par('fullsize', CamParam, 0, CamParOut)</l>
+<l>gen_rectangle1 (roi,0,0,Height-1,Width-1)</l>
+<l>change_radial_distortion_image(Image,roi,image,CamParam,CamParOut)</l>
+<c>*find_calib_descriptor_model (Image, DescriptorHandle, [], [], [], [], 42, 0.25, 1, CamParam, 'num_points', Pose, Score)</c>
+<l>find_calib_descriptor_model (image, DescriptorHandle, [], [], [], [], 0.25, 1, CamParam, 'num_points', Pose, Score)</l>
+<l>get_descriptor_model_points (DescriptorHandle, 'search', 'all', SearchRow, SearchColumn)</l>
+<l>try</l>
+<l>    image_points_to_world_plane (CamParam, Pose, SearchRow, SearchColumn, 'm', X, Y)</l>
+<l>    tuple_gen_const (|SearchRow|, 1.0, Ones)</l>
+<l>    vector_to_pose (X, Y, Ones*0.0, SearchRow, SearchColumn, CamParam, 'planar_analytic_svd', 'error', VectorPose, _)</l>
+<l>*     set_origin_pose(VectorPose, -.14, -.108, 0, Final_Pose)</l>
+<l>    set_origin_pose(VectorPose, 0, 0, 0, Final_Pose)</l>
+<l>catch(Exception)</l>
+<l>    Score:=[]</l>
+<l>    Final_Pose:=[]</l>
+<l>endtry</l>
+<l>return ()</l>
+</body>
+<docu id="get_pose">
+<parameters>
+<parameter id="CamParam"/>
+<parameter id="DescriptorHandle"/>
+<parameter id="Final_Pose"/>
+<parameter id="Image"/>
+<parameter id="Score"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
