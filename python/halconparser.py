@@ -8,6 +8,7 @@ HALCON parameter parser module.
 """
 
 import sys
+import numpy
 from math import pi
 
 from adolphus.geometry import Pose, Point, Rotation
@@ -66,6 +67,26 @@ def parse_external(filename):
                     / 180.0 for value in line.split(' ')[1:]])
     return Pose(T, R)
 
+
+def parse_pose_string(pose_string):
+    """\
+    Parse a pose string from HALCON (comma-delimited concantenation of a
+    homogeneous 3D transformation matrix).
+    
+    @param pose_string: The pose string from HALCON.
+    @type pose_string: C{str}
+    @return: The parsed pose.
+    @rtype: L{Pose}
+    """
+    pose = pose_string.split(',')
+    T = Point([1e3 * float(s) for s in [pose[4 * i + 3] for i in range(3)]])
+    rot = [pose[4 * i:4 * i + 3] for i in range(3)]
+    for i in range(3):
+        for j in range(3):
+            rot[i][j] = float(rot[i][j])
+    R = Rotation.from_rotation_matrix(rot)
+    return Pose(T, R)
+    
 
 if __name__ == '__main__':
     if sys.argv[1].startswith('i'):

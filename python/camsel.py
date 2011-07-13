@@ -10,10 +10,10 @@ Camera selection application.
 import sys
 import socket
 #import serial
-from math import pi
 
 from adolphus.yamlparser import YAMLParser
-from adolphus.geometry import Pose, Point, Rotation
+
+from halconparser import parse_pose_string
 
 
 class CameraSelector(object):
@@ -74,10 +74,8 @@ def parse_from_halcon(hstring):
     """
     hstring = hstring.split(',')
     camera = hstring.pop(0)
-    T = Point([1e3 * float(s) for s in hstring[0:3]])
-    R = Rotation.from_euler('zyx', [(360.0 - float(s)) * pi / 180.0 \
-        for s in hstring[3:6]])
-    return camera, Pose(T, R)
+    pose = parse_pose_string(','.join(hstring))
+    return camera, pose
 
 
 if __name__ == '__main__':
