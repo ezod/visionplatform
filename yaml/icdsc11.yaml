@@ -1,12 +1,11 @@
 model:
     name:           ICDSC 2011
 
-    gamma:          20
-    r1:             0.3
-    r2:             0.01
-    beta:           1.7204
-    zeta1:          0.3
-    zeta2:          max
+    boundary_padding:       20.0
+    res_min_ideal:          0.3
+    res_min_acceptable:     0.01
+    blur_max_acceptable:    1.7204
+    angle_max_ideal:        0.3
 
     cameras:
         - name:         A

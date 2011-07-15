@@ -1,12 +1,11 @@
 model:
     name:           ICIRA 2010
 
-    gamma:          20
-    r1:             3.0
-    r2:             0.5
-    beta:           7.7419
-    zeta1:          0.3
-    zeta2:          max
+    boundary_padding:       20.0
+    res_min_ideal:          3.0
+    res_min_acceptable:     0.5
+    blur_max_acceptable:    7.7419
+    angle_max_ideal:        0.3
 
     cameras:
         - name:         T1

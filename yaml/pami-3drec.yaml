@@ -1,12 +1,12 @@
 model:
     name:           3D Reconstruction Experiment for PAMI
 
-    gamma:          5
-    r1:             2.5
-    r2:             0.5
-    beta:           20
-    zeta1:          1.2
-    zeta2:          1.5
+    boundary_padding:       5.0
+    res_min_ideal:          2.5
+    res_min_acceptable:     0.5
+    blur_max_acceptable:    20.0
+    angle_max_ideal:        1.2
+    angle_max_acceptable:   1.5
 
     cameras:
         - name:         T0
