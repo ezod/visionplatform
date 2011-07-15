@@ -4,7 +4,7 @@ model:
     gamma:          20
     r1:             0.3
     r2:             0.01
-    cmax:           0.008
+    beta:           1.7204
     zeta1:          0.3
     zeta2:          max
 
