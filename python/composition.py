@@ -39,8 +39,12 @@ def absolute_poses(poses, reference):
         pose, error = Pose(), 0.0
         frame = camera
         while prev[frame]:
-            pose += poses[(frame, prev[frame])][0]
-            error += poses[(frame, prev[frame])][1]
+            try:
+                pose += poses[(frame, prev[frame])][0]
+                error += poses[(frame, prev[frame])][1]
+            except KeyError:
+                pose -= poses[(prev[frame], frame)][0]
+                error += poses[(prev[frame], frame)][1]
             frame = prev[frame]
         rposes[camera] = (pose, error)
     return rposes
