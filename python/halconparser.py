@@ -101,43 +101,36 @@ def parse_calibration_files(directory):
     @return: A dict of relative poses.
     @rtype: C{dict} of L{Pose}, C{float}
     """
-    calfiles = glob(os.path.join(directory, 'pose_*_*.dat'))
+    calfiles = glob(os.path.join(directory, 'pose_*_*'))
     poses = {}
     for cf in calfiles:
         with open(cf, 'r') as data:
             pose = parse_pose_string(data.readline().rstrip())
             error = float(data.readline().rstrip())
-            poses[tuple(os.path.basename(cf).split('.')[0].split('_')[1:])] = \
-                (pose, error)
+            poses[tuple(os.path.basename(cf).split('_')[1:])] = (pose, error)
     return poses
 
 
 if __name__ == '__main__':
-    if sys.argv[1].startswith('i'):
-        f, s, o, dim = parse_internal(sys.argv[2])
-        print('          f:            %f' % f)
-        if abs(s[0] - s[1]) < 1e-8:
-            print('          s:            %f' % s[0])
-        else:
-            print('          s:            [%f, %f]' % tuple(s))
-        print('          o:            [%f, %f]' % tuple(o))
-        print('          dim:          [%d, %d]' % tuple(dim))
-    elif sys.argv[1].startswith('e'):
-        pose = parse_external(sys.argv[2])
-        print('          pose:')
-        print('              T:            %s' % list(pose.T))
-        print('              R:            %s' % [pose.R.Q.a, list(pose.R.Q.v)])
-        print('              Rformat:      quaternion')
-    elif sys.argv[1].startswith('f'):
+    try:
         rp = absolute_poses(parse_calibration_files(sys.argv[2]), sys.argv[3])
         print('    cameras:')
         for camera in rp:
+            f, s, o, dim = parse_internal(os.path.join(sys.argv[2], 'internal_%s.cal' % camera))
             print('        - name:         %s' % camera)
+            print('          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]')
+            print('          A:            %f' % float(sys.argv[4]))
+            print('          f:            %f' % f)
+            if abs(s[0] - s[1]) < 1e-8:
+                print('          s:            %f' % s[0])
+            else:
+                print('          s:            [%f, %f]' % tuple(s))
+            print('          o:            [%f, %f]' % tuple(o))
+            print('          dim:          [%d, %d]' % tuple(dim))
+            print('          zS:           %f' % float(sys.argv[5]))
             print('          pose:')
             print('              T:            %s' % list(rp[camera][0].T))
-            print('              R:            %s' % [rp[camera][0].R.Q.a,
-                list(rp[camera][0].R.Q.v)])
+            print('              R:            %s' % [rp[camera][0].R.Q.a, list(rp[camera][0].R.Q.v)])
             print('              Rformat:      quaternion')
-    else:
-        print('Usage: %s internal|external <filename>' % sys.argv[0])
-        print('       %s files <directory> <reference>' % sys.argv[0])
+    except IndexError:
+        print('       %s <directory> <reference> <A> <zS>' % sys.argv[0])
