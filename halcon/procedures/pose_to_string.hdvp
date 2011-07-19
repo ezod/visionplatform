@@ -12,8 +12,8 @@
 <body>
 <l>pose_to_hom_mat3d(pose, matrix)</l>
 <l>tuple_string(matrix, '.8e', matrixstrings)</l>
-<l>string := ''</l>
-<l>for i := 0 to 11 by 1</l>
+<l>string := matrixstrings[0]</l>
+<l>for i := 1 to 11 by 1</l>
 <l>    string := string + ',' + matrixstrings[i]</l>
 <l>endfor</l>
 <l>return ()</l>
