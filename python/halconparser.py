@@ -8,10 +8,13 @@ HALCON parameter parser module.
 """
 
 import sys
-import numpy
+import os.path
+from glob import glob
 from math import pi
 
 from adolphus.geometry import Pose, Point, Rotation
+
+from composition import absolute_poses
 
 
 def parse_internal(filename):
@@ -86,7 +89,28 @@ def parse_pose_string(pose_string):
             rot[i][j] = float(rot[i][j])
     R = Rotation.from_rotation_matrix(rot)
     return Pose(T, R)
-    
+
+
+def parse_calibration_files(directory):
+    """\
+    Parse a set of calibration pose files output by HALCON into a dict suitable
+    for multi-camera calibration.
+
+    @param directory: The directory to scan for files.
+    @type directory: C{str}
+    @return: A dict of relative poses.
+    @rtype: C{dict} of L{Pose}, C{float}
+    """
+    calfiles = glob(os.path.join(directory, 'pose_*_*.dat'))
+    poses = {}
+    for cf in calfiles:
+        with open(cf, 'r') as data:
+            pose = parse_pose_string(data.readline().rstrip())
+            error = float(data.readline().rstrip())
+            poses[tuple(os.path.basename(cf).split('.')[0].split('_')[1:])] = \
+                (pose, error)
+    return poses
+
 
 if __name__ == '__main__':
     if sys.argv[1].startswith('i'):
@@ -104,5 +128,16 @@ if __name__ == '__main__':
         print('              T:            %s' % list(pose.T))
         print('              R:            %s' % [pose.R.Q.a, list(pose.R.Q.v)])
         print('              Rformat:      quaternion')
+    elif sys.argv[1].startswith('f'):
+        rp = absolute_poses(parse_calibration_files(sys.argv[2]), sys.argv[3])
+        print('    cameras:')
+        for camera in rp:
+            print('        - name:         %s' % camera)
+            print('          pose:')
+            print('              T:            %s' % list(rp[camera][0].T))
+            print('              R:            %s' % [rp[camera][0].R.Q.a,
+                list(rp[camera][0].R.Q.v)])
+            print('              Rformat:      quaternion')
     else:
-        print('Usage: %s <internal|external> <filename>' % sys.argv[0])
+        print('Usage: %s internal|external <filename>' % sys.argv[0])
+        print('       %s files <directory> <reference>' % sys.argv[0])
