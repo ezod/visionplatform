@@ -10,6 +10,7 @@ Module for composing multiple relative camera calibrations.
 from adolphus.geometry import Pose
 from hypergraph import Graph, Edge
 from hypergraph.path import dijkstra
+from hypergraph.connectivity import connected
 
 
 def absolute_poses(poses, reference):
@@ -30,9 +31,17 @@ def absolute_poses(poses, reference):
     """
     cameras = set([key[0] for key in poses])
     frames = set([key[i] for key in poses for i in range(2)])
+    try:
+        assert(reference in frames)
+    except AssertionError:
+        raise ValueError('reference frame %s does not exist' % reference)
     cg = Graph(vertices=frames)
     for pair in poses:
         cg.add_edge(Edge(pair), weight=poses[pair][1])
+    try:
+        assert(connected(cg))
+    except AssertionError:
+        raise AssertionError('calibration graph is not connected')
     prev = dijkstra(cg, reference)
     rposes = {}
     for camera in cameras:
