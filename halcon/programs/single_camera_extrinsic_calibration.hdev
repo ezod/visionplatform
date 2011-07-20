@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="493192431">
+<procedure name="main">
+<interface/>
+<body>
+<c>* Name of the camera</c>
+<l>cam:= ''</l>
+<c>* Name of the target with respect to the camera</c>
+<l>target:= ''</l>
+<c>* Path directories for the necessary files</c>
+<l>path:= ''</l>
+<l>im_path:=  path+'.tiff'</l>
+<l>par_path:= path+'.cal'</l>
+<l>plate_description:= path+'.descr'</l>
+<c>* Correcting for radial distortion</c>
+<l>read_image(image, im_path)</l>
+<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
+<l>read_cam_par(par_path, CamParIn)</l>
+<l>change_radial_distortion_cam_par ('fullsize', CamParIn, 0, CamParOut)</l>
+<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
+<l>change_radial_distortion_image (image, roi, ImageRec, CamParIn, CamParOut)</l>
+<c>* Extrinsic calibration</c>
+<l>find_caltab (ImageRec, PlateRegion, plate_description, 3, 80, 3)</l>
+<l>find_marks_and_pose (ImageRec, PlateRegion,plate_description, CamParOut, \
+                     128, 10, 18, 0.9, 15, 100, MarkRows, \
+                     MarkColumns, EstimatedPose)</l>
+<l>caltab_points (plate_description, X, Y, Z)</l>
+<l>camera_calibration (X, Y, Z, MarkRows, MarkColumns, CamParOut, \
+                    EstimatedPose, 'pose', CamParOut, target_pose, Errors)</l>
+<l>pose_to_hom_mat3d (target_pose, target_mat)</l>
+<l>hom_mat3d_invert(target_mat, cam_mat)</l>
+<l>hom_mat3d_to_pose (cam_mat, cam_pose)</l>
+<c>* Convert the camera pose to matrix and output it as a string </c>
+<c>* appending the error</c>
+<l>pose_to_string(cam_pose, cam_mat_string)</l>
+<l>tuple_string(Errors, '.8e', error_string)</l>
+<l>cam_mat_string:= cam_mat_string + '\n' + error_string</l>
+<c>* Write a file with the camera matrix string</c>
+<l>open_file (path+'data/pose_'+cam+'_'+target, 'output', FileHandle)</l>
+<l>fwrite_string (FileHandle, cam_mat_string)</l>
+<l>close_file (FileHandle)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="24711055">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="943199299">
 <procedure name="get_pose">
 <interface>
 <io>
@@ -11,6 +11,7 @@
 </ic>
 <oc>
 <par name="target_mat_string"/>
+<par name="target_pose"/>
 </oc>
 </interface>
 <body>
@@ -33,6 +34,7 @@
 <l>    pose_to_string(target_pose, target_mat_string)</l>
 <l>catch(Exception)</l>
 <c>    * If no target was found then the pose is an empty string</c>
+<l>    target_pose:= []</l>
 <l>    target_mat_string:= ''</l>
 <l>endtry</l>
 <l>return ()</l>
@@ -89,6 +91,7 @@
 <item>string</item>
 </type_list>
 </parameter>
+<parameter id="target_pose"/>
 </parameters>
 </docu>
 </procedure>
