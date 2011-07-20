@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="885963161">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="301503023">
 <procedure name="main">
 <interface/>
 <body>
 <l>dev_update_off()</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
 <l>path:= ''</l>
 <l>target_descr:= path+'parameters/caltab_200mm.descr'</l>
 <c></c>
@@ -13,14 +15,16 @@
 <l>active := 0</l>
 <l>while (1)</l>
 <l>    if(active = 0)</l>
-<l>        open_cam(AcqHandle, cam)</l>
-<l>        read_cam_par(par_path+'parameters/internal_'+cam+'.cal', campar)</l>
+<l>        open_cam (cam, AcqHandle)</l>
+<l>        read_cam_par(path+'parameters/internal_'+cam+'.cal', campar)</l>
 <l>        active := 1</l>
 <l>    endif</l>
 <l>    grab_image_start (AcqHandle, -1)</l>
 <l>    grab_image_async (image, AcqHandle, -1)</l>
 <l>    dev_display(image)</l>
-<l>    get_pose(image, cam_par_in, target_descr, target_mat_string)</l>
+<l>    get_pose (image, campar, target_descr, target_mat_string, target_pose)</l>
+<l>    dev_set_color ('green')</l>
+<l>    disp_3d_coord_system (win, campar, target_pose, 0.08)</l>
 <l>    if (target_mat_string = '')</l>
 <l>        continue</l>
 <l>    endif</l>
@@ -41,9 +45,11 @@
 </procedure>
 <procedure name="open_cam">
 <interface>
+<ic>
+<par name="cam"/>
+</ic>
 <oc>
 <par name="AcqHandle"/>
-<par name="cam"/>
 </oc>
 </interface>
 <body>
@@ -52,7 +58,7 @@
                    '000F310000006'+cam, 0, -1, AcqHandle)</l>
 <l>set_framegrabber_param (AcqHandle, 'camera_type', '7:1:0')</l>
 <l>set_framegrabber_param (AcqHandle, 'video_gain', 1)</l>
-<l>set_framegrabber_param (AcqHandle, 'shutter', 400)</l>
+<l>set_framegrabber_param (AcqHandle, 'shutter', 75)</l>
 <l>set_framegrabber_param (AcqHandle, 'grab_timeout', 3000)</l>
 <l>return ()</l>
 </body>
