@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="153632882">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="622149069">
 <procedure name="main">
 <interface/>
 <body>
@@ -21,11 +21,8 @@
 <l>    if (Pose = [])</l>
 <l>        continue</l>
 <l>    endif</l>
-<l>    tuple_string(Pose, '.4e', posestrings)</l>
-<l>    outstring := cam</l>
-<l>    for i := 0 to 5 by 1</l>
-<l>        outstring := outstring + ',' + posestrings[i]</l>
-<l>    endfor</l>
+<l>    pose_to_string(Pose, posestring)</l>
+<l>    outstring := cam + ',' + posestring</l>
 <l>    send_data(osock, 'z', outstring, [])</l>
 <l>    receive_data(osock, 'z', newcam, from)</l>
 <l>    if (newcam # cam)</l>
