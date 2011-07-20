@@ -1,0 +1,45 @@
+description:    Lebow Table
+
+primitives:
+    # top
+    - type:         box
+      pos:          [0, 0, 153]
+      length:       407
+      width:        20
+      height:       407
+      color:        [0.47, 0.42, 0.40]
+      material:     rough
+    # legs
+    - type:         box
+      pos:          [199, 199, 71.5]
+      length:       9
+      width:        143
+      height:       9
+      color:        [0.47, 0.42, 0.40]
+      material:     rough
+    - type:         box
+      pos:          [-199, 199, 71.5]
+      length:       9
+      width:        143
+      height:       9
+      color:        [0.47, 0.42, 0.40]
+      material:     rough
+    - type:         box
+      pos:          [199, -199, 71.5]
+      length:       9
+      width:        143
+      height:       9
+      color:        [0.47, 0.42, 0.40]
+      material:     rough
+    - type:         box
+      pos:          [-199, -199, 71.5]
+      length:       9
+      width:        143
+      height:       9
+      color:        [0.47, 0.42, 0.40]
+      material:     rough
+
+planes:
+    - x:            [-203.5, 203.5]
+      y:            [-203.5, 203.5]
+      z:            163

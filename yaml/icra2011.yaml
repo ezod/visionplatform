@@ -84,6 +84,12 @@ model:
         - name:         RV1A
           robot:        robots/mitsubishirv1a.yaml
           config:       [0.15, -0.16, 90.22, -0.31, -0.14, 0.06, 8.0]
+        - name:         LebowTable
+          sprites:      [scene/lebowtable.yaml]
+          pose:
+              T:            [771.5, 0, -12]
+              R:            [1, [0, 0, 0]]
+              Rformat:      'quaternion'
         - name:         CameraFrame
           pose:
               T:            [897.0, 153.0, -12.0]
