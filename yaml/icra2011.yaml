@@ -3,9 +3,9 @@ model:
 
     res_min_ideal:          3.0
     res_min_acceptable:     0.5
-    blur_max_acceptable:    8.0
-    angle_max_ideal:        0.47
-    angle_max_acceptable:   0.74
+    blur_max_acceptable:    10.0
+    angle_max_ideal:        1.0
+    angle_max_acceptable:   1.5
 
     cameras:
         - name:         AB9
