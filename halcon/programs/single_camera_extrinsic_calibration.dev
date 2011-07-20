@@ -1,0 +1,164 @@
+33 3
+125042370
+comment 0 0 1 0 0 3 0 0
+`* Name of the camera
+Name of the camera
+assign 0 0 1 1 0 3 0 0
+`cam:= ''
+''
+cam
+comment 0 0 1 0 0 3 0 0
+`* Name of the target with respect to the camera
+Name of the target with respect to the camera
+assign 0 0 1 1 0 3 0 0
+`target:= ''
+''
+target
+comment 0 0 1 0 0 3 0 0
+`* Path directories for the necessary files
+Path directories for the necessary files
+assign 0 0 1 1 0 3 0 0
+`path:= ''
+''
+path
+assign 0 0 1 1 0 3 0 0
+`im_path:=  path+'.tiff'
+path+'.tiff'
+im_path
+assign 0 0 1 1 0 3 0 0
+`par_path:= path+'.cal'
+path+'.cal'
+par_path
+assign 0 0 1 1 0 3 0 0
+`plate_description:= path+'.descr'
+path+'.descr'
+plate_description
+comment 0 0 1 0 0 3 0 0
+`* Correcting for radial distortion
+Correcting for radial distortion
+read_image 0 1 1 0 0 1 0 0
+`read_image(image, im_path)
+image
+im_path
+get_image_pointer1 1 0 0 4 0 1 0 0
+`get_image_pointer1 (image, Pointer, Type, Width, Height)
+image
+Pointer
+Type
+Width
+Height
+read_cam_par 0 0 1 1 0 1 0 0
+`read_cam_par(par_path, CamParIn)
+par_path
+CamParIn
+change_radial_distortion_cam_par 0 0 3 1 0 1 0 0
+`change_radial_distortion_cam_par ('fullsize', CamParIn, 0, CamParOut)
+'fullsize'
+CamParIn
+0
+CamParOut
+gen_rectangle1 0 1 4 0 0 1 0 0
+`gen_rectangle1 (roi, 0, 0, Height-1, Width-1)
+roi
+0
+0
+Height-1
+Width-1
+change_radial_distortion_image 2 1 2 0 0 1 0 0
+`change_radial_distortion_image (image, roi, ImageRec, CamParIn, CamParOut)
+image
+roi
+ImageRec
+CamParIn
+CamParOut
+comment 0 0 1 0 0 3 0 0
+`* Extrinsic calibration
+Extrinsic calibration
+find_caltab 1 1 4 0 0 1 0 0
+`find_caltab (ImageRec, PlateRegion, plate_description, 3, 80, 3)
+ImageRec
+PlateRegion
+plate_description
+3
+80
+3
+find_marks_and_pose 2 0 8 3 0 1 0 0
+`find_marks_and_pose (ImageRec, PlateRegion,plate_description, CamParOut, \                     128, 10, 18, 0.9, 15, 100, MarkRows, \                     MarkColumns, EstimatedPose)
+ImageRec
+PlateRegion
+plate_description
+CamParOut
+128
+10
+18
+0.9
+15
+100
+MarkRows
+MarkColumns
+EstimatedPose
+caltab_points 0 0 1 3 0 1 0 0
+`caltab_points (plate_description, X, Y, Z)
+plate_description
+X
+Y
+Z
+camera_calibration 0 0 8 3 0 1 0 0
+`camera_calibration (X, Y, Z, MarkRows, MarkColumns, CamParOut, \                    EstimatedPose, 'pose', CamParOut, target_pose, Errors)
+X
+Y
+Z
+MarkRows
+MarkColumns
+CamParOut
+EstimatedPose
+'pose'
+CamParOut
+target_pose
+Errors
+pose_to_hom_mat3d 0 0 1 1 0 1 0 0
+`pose_to_hom_mat3d (target_pose, target_mat)
+target_pose
+target_mat
+hom_mat3d_invert 0 0 1 1 0 1 0 0
+`hom_mat3d_invert(target_mat, cam_mat)
+target_mat
+cam_mat
+hom_mat3d_to_pose 0 0 1 1 0 1 0 0
+`hom_mat3d_to_pose (cam_mat, cam_pose)
+cam_mat
+cam_pose
+comment 0 0 1 0 0 3 0 0
+`* Convert the camera pose to matrix and output it as a string 
+Convert the camera pose to matrix and output it as a string
+comment 0 0 1 0 0 3 0 0
+`* appending the error
+appending the error
+pose_to_string 0 0 1 1 0 4 0 0
+`pose_to_string(cam_pose, cam_mat_string)
+cam_pose
+cam_mat_string
+tuple_string 0 0 2 1 0 1 0 0
+`tuple_string(Errors, '.8e', error_string)
+Errors
+'.8e'
+error_string
+assign 0 0 1 1 0 3 0 0
+`cam_mat_string:= cam_mat_string + '\n' + error_string
+cam_mat_string + '\n' + error_string
+cam_mat_string
+comment 0 0 1 0 0 3 0 0
+`* Write a file with the camera matrix string
+Write a file with the camera matrix string
+open_file 0 0 2 1 0 1 0 0
+`open_file (path+'data/pose_'+cam+'_'+target, 'output', FileHandle)
+path+'data/pose_'+cam+'_'+target
+'output'
+FileHandle
+fwrite_string 0 0 2 0 0 1 0 0
+`fwrite_string (FileHandle, cam_mat_string)
+FileHandle
+cam_mat_string
+close_file 0 0 1 0 0 1 0 0
+close_file (FileHandle)
+FileHandle

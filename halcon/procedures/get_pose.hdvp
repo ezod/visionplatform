@@ -1,47 +1,94 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0" cs="756058814">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="24711055">
 <procedure name="get_pose">
 <interface>
 <io>
-<par name="Image"/>
+<par name="image"/>
 </io>
 <ic>
-<par name="CamParam"/>
-<par name="DescriptorHandle"/>
+<par name="int_par"/>
+<par name="plate_description"/>
 </ic>
 <oc>
-<par name="Final_Pose"/>
-<par name="Score"/>
+<par name="target_mat_string"/>
 </oc>
 </interface>
 <body>
-<l>get_image_pointer1 (Image, Pointer, Type, Width, Height)</l>
-<l>gen_rectangle1 (roi,0,0,Height-1,Width-1)</l>
-<l>change_radial_distortion_cam_par('fullsize', CamParam, 0, CamParOut)</l>
-<l>gen_rectangle1 (roi,0,0,Height-1,Width-1)</l>
-<l>change_radial_distortion_image(Image,roi,image,CamParam,CamParOut)</l>
-<c>*find_calib_descriptor_model (Image, DescriptorHandle, [], [], [], [], 42, 0.25, 1, CamParam, 'num_points', Pose, Score)</c>
-<l>find_calib_descriptor_model (image, DescriptorHandle, [], [], [], [], 0.25, 1, CamParam, 'num_points', Pose, Score)</l>
-<l>get_descriptor_model_points (DescriptorHandle, 'search', 'all', SearchRow, SearchColumn)</l>
+<c>* Correct for radial distortion</c>
+<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
+<l>change_radial_distortion_cam_par ('fullsize', int_par, 0, CamParOut)</l>
+<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
+<l>change_radial_distortion_image (image, roi, ImageRec, int_par, CamParOut)</l>
+<c>* Find the target and estimate the pose</c>
 <l>try</l>
-<l>    image_points_to_world_plane (CamParam, Pose, SearchRow, SearchColumn, 'm', X, Y)</l>
-<l>    tuple_gen_const (|SearchRow|, 1.0, Ones)</l>
-<l>    vector_to_pose (X, Y, Ones*0.0, SearchRow, SearchColumn, CamParam, 'planar_analytic_svd', 'error', VectorPose, _)</l>
-<l>*     set_origin_pose(VectorPose, -.14, -.108, 0, Final_Pose)</l>
-<l>    set_origin_pose(VectorPose, 0, 0, 0, Final_Pose)</l>
+<l>    find_caltab (ImageRec, PlateRegion, plate_description, 3, 80, 3)</l>
+<l>    find_marks_and_pose (ImageRec, PlateRegion, plate_description, \
+                         CamParOut, 128, 10, 18, 0.9, 15, 100, \
+                         MarkRows, MarkColumns, EstimatedPose)</l>
+<l>    caltab_points (plate_description, X, Y, Z)</l>
+<l>    camera_calibration (X, Y, Z, MarkRows, MarkColumns, CamParOut, \
+                EstimatedPose, 'pose', CamParOut, target_pose, Errors)</l>
+<c>    * Convert the target pose to matrix and output it as a string </c>
+<c>    * appending the error</c>
+<l>    pose_to_string(target_pose, target_mat_string)</l>
 <l>catch(Exception)</l>
-<l>    Score:=[]</l>
-<l>    Final_Pose:=[]</l>
+<c>    * If no target was found then the pose is an empty string</c>
+<l>    target_mat_string:= ''</l>
 <l>endtry</l>
 <l>return ()</l>
 </body>
 <docu id="get_pose">
+<abstract lang="en_US">Given an Image, the internal parameters of the camera, and the path to the descriptor file of the target, then the program returns the pose of the target relative to the camera.</abstract>
+<short lang="en_US">Find the pose of the calibration target.</short>
 <parameters>
-<parameter id="CamParam"/>
-<parameter id="DescriptorHandle"/>
-<parameter id="Final_Pose"/>
-<parameter id="Image"/>
-<parameter id="Score"/>
+<parameter id="image">
+<description lang="en_US">The image showing the target, whose pose is to be estimated.</description>
+<multichannel>false</multichannel>
+<multivalue>false</multivalue>
+<sem_type>image</sem_type>
+<type_list>
+<item>byte</item>
+<item>int1</item>
+<item>int2</item>
+<item>uint2</item>
+<item>int4</item>
+<item>int8</item>
+<item>real</item>
+<item>cyclic</item>
+<item>direction</item>
+<item>complex</item>
+<item>vector_field</item>
+</type_list>
+</parameter>
+<parameter id="int_par">
+<default_type>real</default_type>
+<description lang="en_US">The internal parameters of the camera.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
+<parameter id="plate_description">
+<default_type>string</default_type>
+<default_value>'caltab.descr'</default_value>
+<description lang="en_US">File name of the calibration plate description.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
+<parameter id="target_mat_string">
+<default_type>string</default_type>
+<description lang="en_US">A string, that is separated by commas, containing the elements of the matrix that represents the pose of the target with respect to the camera.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
 </parameters>
 </docu>
 </procedure>
