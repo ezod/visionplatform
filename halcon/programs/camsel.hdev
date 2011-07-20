@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="42523661">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="885963161">
 <procedure name="main">
 <interface/>
 <body>
 <l>dev_update_off()</l>
-<l>dev_close_window()</l>
-<l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
 <l>path:= ''</l>
 <l>target_descr:= path+'parameters/caltab_200mm.descr'</l>
 <c></c>
 <l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
                     ['infinite','TCP'], osock)</l>
 <l>cam := 'AB9'</l>
-<l>read_cam_par(path+'parameters/internal_'+cam+'.cal', cam_par_in)</l>
 <l>active := 0</l>
 <l>while (1)</l>
 <l>    if(active = 0)</l>
 <l>        open_cam(AcqHandle, cam)</l>
+<l>        read_cam_par(par_path+'parameters/internal_'+cam+'.cal', campar)</l>
 <l>        active := 1</l>
 <l>    endif</l>
 <l>    grab_image_start (AcqHandle, -1)</l>
 <l>    grab_image_async (image, AcqHandle, -1)</l>
-<l>    read_cam_par(par_path+'parameters/internal_'+cam+'.cal', campar)</l>
+<l>    dev_display(image)</l>
 <l>    get_pose(image, cam_par_in, target_descr, target_mat_string)</l>
 <l>    if (target_mat_string = '')</l>
 <l>        continue</l>
