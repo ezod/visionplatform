@@ -87,9 +87,9 @@ if __name__ == '__main__':
         port = 5678
     sock.bind(('localhost', port))
     sock.listen(20)
-    channel, details = sock.accept()
     #port = serial.Serial(port=sys.argv[1], baudrate=19200)
     print('Ready.')
+    channel, details = sock.accept()
     try:
         while True:
             hstring = ''
