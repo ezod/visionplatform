@@ -118,7 +118,7 @@ if __name__ == '__main__':
         rp = absolute_poses(parse_calibration_files(sys.argv[2]), sys.argv[3])
         print('    cameras:')
         for camera in rp:
-            f, s, o, dim = parse_internal(os.path.join(sys.argv[2], 'internal_%s.cal' % camera))
+            f, k, s, o, dim = parse_internal(os.path.join(sys.argv[2], 'internal_%s.cal' % camera))
             print('        - name:         %s' % camera)
             print('          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]')
             print('          A:            %f' % float(sys.argv[4]))
