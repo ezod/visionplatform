@@ -27,7 +27,7 @@ def parse_internal(filename):
     @return: Tuple containing the internal parameters f, s, o, and dim.
     @rtype: C{tuple}
     """
-    f, s, o, dim = None, [None, None], [None, None], [None, None]
+    f, k, s, o, dim = None, None, [None, None], [None, None], [None, None]
     with open(filename, 'r') as icfile:
         for line in icfile:
             line = line.rstrip()
@@ -37,6 +37,8 @@ def parse_internal(filename):
             value = float(line.split(':')[2][1:-1])
             if line.startswith('Focus'):
                 f = 1e3 * value
+            elif line.startswith('Kappa'):
+                k = value
             elif line.startswith('Sx'):
                 s[0] = 1e3 * value
             elif line.startswith('Sy'):
@@ -49,7 +51,7 @@ def parse_internal(filename):
                 dim[0] = int(value)
             elif line.startswith('ImageHeight'):
                 dim[1] = int(value)
-    return f, s, o, dim
+    return f, k, s, o, dim
 
 
 def parse_external(filename):
