@@ -7,9 +7,9 @@ Camera selection application.
 @license: GPL-3
 """
 
-import sys
 import socket
 #import serial
+from optparse import OptionParser
 
 from adolphus.yamlparser import YAMLParser
 
@@ -36,7 +36,7 @@ class CameraSelector(object):
         except KeyError:
             raise KeyError('incorrect experiment format')
 
-    def best_view(self, current, target_pose, robot_config):
+    def best_view(self, current, target_pose, robot_config, threshold=0.0):
         """\
         TODO
 
@@ -46,6 +46,8 @@ class CameraSelector(object):
         @type target_pose: L{Pose}
         @param robot_config: The current state of the robotic arm.
         @type robot_config: C{list} of C{float}
+        @param threshold: Hysteresis threshold.
+        @type threshold: C{float}
         @return: The next camera to make active.
         @rtype: C{str}
         """
@@ -58,6 +60,7 @@ class CameraSelector(object):
         for camera in candidates:
             candidates[camera] = self.model[camera].performance(self.target)
         print(candidates)
+        candidates[current] += threshold
         return sorted(candidates.keys(), key=candidates.__getitem__)[-1]
 
 
@@ -79,17 +82,21 @@ def parse_from_halcon(hstring):
 
 
 if __name__ == '__main__':
-    selector = CameraSelector(sys.argv[1])
+    parser = OptionParser()
+    parser.add_option('-p', '--port', dest='port', action='store',
+        type='int', default=5678)
+    parser.add_option('-c', '--comport', dest='comport', action='store',
+        default='COM1')
+    parser.add_option('-t', '--threshold', dest='threshold', action='store',
+        type='float', default=0.0)
+    opts, args = parser.parse_args()
+    selector = CameraSelector(args[0])
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        port = int(sys.argv[2])
-    except IndexError:
-        port = 5678
-    sock.bind(('localhost', port))
+    sock.bind(('localhost', opts.port))
     sock.listen(20)
-    channel, details = sock.accept()
-    #port = serial.Serial(port=sys.argv[1], baudrate=19200)
+    #port = serial.Serial(port=opts.comport, baudrate=19200)
     print('Ready.')
+    channel, details = sock.accept()
     try:
         while True:
             hstring = ''
@@ -103,7 +110,7 @@ if __name__ == '__main__':
             # TODO: get robot config
             #port.write('PRNS\r')
             config = []
-            bestview = selector.best_view(camera, pose, config)
+            bestview = selector.best_view(camera, pose, config, opts.threshold)
             print('Best view is camera %s.' % bestview)
             channel.sendall(bestview)
     finally:
