@@ -1,5 +1,5 @@
 model:
-    name:           ICRA 2011
+    name:           ICRA 2012
 
     res_min_ideal:          3.0
     res_min_acceptable:     0.5
