@@ -51,7 +51,7 @@ class CameraSelector(object):
         @return: The next camera to make active.
         @rtype: C{str}
         """
-        self.target.pose = target_pose
+        self.target.set_relative_pose(target_pose)
         self.target.mount = self.model[current]
         print('Received pose %s from camera %s.' % (self.target.pose, current))
         #self.robot.config = robot_config
