@@ -20,20 +20,19 @@ class CameraSelector(object):
     """\
     Camera selector class.
     """
-    def __init__(self, model, relevance):
+    def __init__(self, experiment):
         """\
         Constructor.
 
         @param model_file: The YAML file for the model.
         @type model_file: C{str}
         """
-        self.model = model
-        self.relevance = relevance
+        self.experiment = experiment
         try:
-            self.target = relevance['target']
-            #self.robot = self.model.scene['robot']
-            self.vision_graph = \
-                self.model.coverage_hypergraph(relevance['cell'], K=[2])
+            self.target = experiment.relevance_models['target']
+            #self.robot = experiment.model.scene['robot']
+            self.vision_graph = experiment.model.coverage_hypergraph(\
+                experiment.relevance_models['cell'], K=[2])
         except KeyError:
             raise KeyError('incorrect experiment format')
 
@@ -53,17 +52,25 @@ class CameraSelector(object):
         @rtype: C{str}
         """
         self.target.set_relative_pose(target_pose)
-        self.target.mount = self.model[current]
+        self.target.mount = self.experiment.model[current]
         self.target.visualize()
         print('Received pose %s from camera %s.' % (self.target.pose, current))
         #self.robot.config = robot_config
         candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
             set([current]))
-        for camera in candidates:
-            candidates[camera] = self.model[camera].performance(self.target)
+        for camera in self.experiment.model:
+            if camera in candidates:
+                candidates[camera] = \
+                    self.experiment.model[camera].performance(self.target)
+                self.experiment.execute('showval %s %s' % (camera,
+                    candidates[camera]))
+            else:
+                self.experiment.execute('showval %s' % camera)
         print(candidates)
         candidates[current] += threshold
-        return sorted(candidates.keys(), key=candidates.__getitem__)[-1]
+        best = sorted(candidates.keys(), key=candidates.__getitem__)[-1]
+        self.experiment.execute('indicate %s' % best)
+        return best
 
 
 def parse_from_halcon(hstring):
@@ -98,7 +105,7 @@ if __name__ == '__main__':
     opts, args = parser.parse_args()
     experiment = Experiment(args[0], config_file=opts.conf, zoom=opts.zoom)
     experiment.start()
-    selector = CameraSelector(experiment.model, experiment.relevance_models)
+    selector = CameraSelector(experiment)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', opts.port))
     sock.listen(20)
