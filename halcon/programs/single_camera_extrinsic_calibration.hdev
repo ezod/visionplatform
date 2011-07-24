@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="493192431">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="1032939273">
 <procedure name="main">
 <interface/>
 <body>
+<c>* This program computes the extrinsic parameters of a camera that is </c>
+<c>* already calibrated (internally).</c>
+<c>* Inputs</c>
+<c>* -Image of the calibration target</c>
+<c>* -Internal parameters of the camera</c>
+<c>* -Description file of the target</c>
+<c>* Output</c>
+<c>* -The string containing the elements of the homogeneous matrix that </c>
+<c>* contains the extrinsic parameters of the camera.</c>
 <c>* Name of the camera</c>
 <l>cam:= ''</l>
 <c>* Name of the target with respect to the camera</c>
