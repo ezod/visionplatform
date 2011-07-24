@@ -11,7 +11,7 @@ import socket
 #import serial
 from optparse import OptionParser
 
-from adolphus.yamlparser import YAMLParser
+from adolphus import Experiment
 
 from halconparser import parse_pose_string
 
@@ -20,14 +20,15 @@ class CameraSelector(object):
     """\
     Camera selector class.
     """
-    def __init__(self, model_file):
+    def __init__(self, model, relevance):
         """\
         Constructor.
 
         @param model_file: The YAML file for the model.
         @type model_file: C{str}
         """
-        self.model, relevance = YAMLParser(model_file).experiment
+        self.model = model
+        self.relevance = relevance
         try:
             self.target = relevance['target']
             #self.robot = self.model.scene['robot']
@@ -53,6 +54,7 @@ class CameraSelector(object):
         """
         self.target.set_relative_pose(target_pose)
         self.target.mount = self.model[current]
+        self.target.visualize()
         print('Received pose %s from camera %s.' % (self.target.pose, current))
         #self.robot.config = robot_config
         candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
@@ -84,17 +86,23 @@ def parse_from_halcon(hstring):
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-p', '--port', dest='port', action='store',
-        type='int', default=5678)
-    parser.add_option('-c', '--comport', dest='comport', action='store',
-        default='COM1')
+        type='int', default=5678, help='network port to listen on')
+    parser.add_option('-s', '--serialport', dest='serialport', action='store',
+        default='COM1', help='serial port for robot')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
-        type='float', default=0.0)
+        type='float', default=0.0, help='hysteresis threshold')
+    parser.add_option('-c', '--conf', dest='conf', default=None,
+        help='custom configuration file to load')
+    parser.add_option('-z', '--zoom', dest='zoom', default=False,
+        action='store_true', help='disable camera view and use visual zoom')
     opts, args = parser.parse_args()
-    selector = CameraSelector(args[0])
+    experiment = Experiment(args[0], config_file=opts.conf, zoom=opts.zoom)
+    experiment.start()
+    selector = CameraSelector(experiment.model, experiment.relevance_models)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', opts.port))
     sock.listen(20)
-    #port = serial.Serial(port=opts.comport, baudrate=19200)
+    #port = serial.Serial(port=opts.serialport, baudrate=19200)
     print('Ready.')
     channel, details = sock.accept()
     try:
@@ -117,3 +125,5 @@ if __name__ == '__main__':
         #port.close()
         channel.close()
         sock.close()
+        experiment.execute('exit')
+        experiment.join()
