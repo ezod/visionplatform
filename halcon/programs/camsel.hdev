@@ -1,16 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="301503023">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="357222720">
 <procedure name="main">
 <interface/>
 <body>
+<c>* After all required initializations, this program does the following </c>
+<c>* in a loop:</c>
+<c>* -Take an image with the selected camera.</c>
+<c>* -Find and estimate the pose of the calibration target.</c>
+<c>* -if successful, display the coordinate axis of the target, else continue</c>
+<c>* -Send the pose to adolphus for coverage evaluation and retrieve the </c>
+<c>* camera with the best view</c>
+<c>* -Select the new best view and repeat the process.</c>
+<c>* Prepare environment</c>
 <l>dev_update_off()</l>
 <l>dev_close_window ()</l>
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
+<c></c>
+<c>* Necessary path directories</c>
 <l>path:= ''</l>
 <l>target_descr:= path+'parameters/caltab_200mm.descr'</l>
 <c></c>
+<c>* Open communications with external software</c>
 <l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
                     ['infinite','TCP'], osock)</l>
+<c>* Initialize camera selection</c>
 <l>cam := 'AB9'</l>
 <l>active := 0</l>
 <l>while (1)</l>
@@ -63,9 +76,23 @@
 <l>return ()</l>
 </body>
 <docu id="open_cam">
+<abstract lang="en_US">This precedure opens a frame grabber for a firewire 1394IIDC compliant camera. The name of the camera are the last three letters of the firewire ID of the camera.</abstract>
+<short lang="en_US">Open frame-grabber for firewire camera.</short>
 <parameters>
-<parameter id="AcqHandle"/>
-<parameter id="cam"/>
+<parameter id="AcqHandle">
+<description lang="en_US">The Handle of the frame-grabber.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+</parameter>
+<parameter id="cam">
+<default_type>string</default_type>
+<description lang="en_US">The last three letters of the firewire ID of the camera.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
 </parameters>
 </docu>
 </procedure>
