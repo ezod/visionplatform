@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="911478532">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="283181701">
 <procedure name="pose_to_string">
 <interface>
 <ic>
@@ -19,9 +19,26 @@
 <l>return ()</l>
 </body>
 <docu id="pose_to_string">
+<abstract lang="en_US">Convert a pose into a homogeneous matrix; then, output the elements of the matrix as string in the "comma separated" format.</abstract>
+<short lang="en_US">Convert a pose object into a string object.</short>
 <parameters>
-<parameter id="pose"/>
-<parameter id="string"/>
+<parameter id="pose">
+<default_type>real</default_type>
+<description lang="en_US">The pose object to be converted.</description>
+<multivalue>false</multivalue>
+<type_list>
+<item>real</item>
+</type_list>
+</parameter>
+<parameter id="string">
+<default_type>string</default_type>
+<description lang="en_US">The output string containing the elements of the homogeneous matrix separated by comma.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
 </parameters>
 </docu>
 </procedure>
