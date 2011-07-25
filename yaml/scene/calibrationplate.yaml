@@ -1,0 +1,15 @@
+description:    Calibration Plate
+
+primitives:
+    - type:         box
+      length:       2
+      height:       100
+      width:        100
+      color:        [1, 1, 1]
+      texture:      calibrationplate
+      mapping:      sign
+
+#planes:
+#    - x:            [-50, 50]
+#      y:            0
+#      z:            [-50, 50]

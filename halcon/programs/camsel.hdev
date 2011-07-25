@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="357222720">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="24102756">
 <procedure name="main">
 <interface/>
 <body>
@@ -18,7 +18,7 @@
 <c></c>
 <c>* Necessary path directories</c>
 <l>path:= ''</l>
-<l>target_descr:= path+'parameters/caltab_200mm.descr'</l>
+<l>target_descr:= path+'parameters/caltab_100mm.descr'</l>
 <c></c>
 <c>* Open communications with external software</c>
 <l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
@@ -36,20 +36,23 @@
 <l>    grab_image_async (image, AcqHandle, -1)</l>
 <l>    dev_display(image)</l>
 <l>    get_pose (image, campar, target_descr, target_mat_string, target_pose)</l>
-<l>    dev_set_color ('green')</l>
-<l>    disp_3d_coord_system (win, campar, target_pose, 0.08)</l>
 <l>    if (target_mat_string = '')</l>
 <l>        continue</l>
 <l>    endif</l>
 <l>    outstring := cam + ',' + target_mat_string</l>
-<l>    send_data(osock, 'z', outstring, [])</l>
-<l>    receive_data(osock, 'z', newcam, from)</l>
+<l>    try</l>
+<l>        send_data(osock, 'z', outstring, [])</l>
+<l>        receive_data(osock, 'z', newcam, from)</l>
+<l>    catch(Exception)</l>
+<l>        break</l>
+<l>    endtry</l>
 <l>    if (newcam # cam)</l>
 <l>       close_framegrabber(AcqHandle)</l>
 <l>       active := 0</l>
 <l>       cam := newcam</l>
 <l>    endif</l>
 <l>endwhile</l>
+<l>close_framegrabber(AcqHandle)</l>
 <l>close_socket(osock)</l>
 </body>
 <docu id="main">

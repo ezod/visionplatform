@@ -1,11 +1,10 @@
 model:
     name:           ICRA 2012
 
-    res_min_ideal:          3.0
-    res_min_acceptable:     0.5
-    blur_max_acceptable:    10.0
-    angle_max_ideal:        1.0
-    angle_max_acceptable:   1.5
+    res_min_acceptable:     0.9
+    blur_max_acceptable:    6.0
+    angle_max_ideal:        0.7
+    angle_max_acceptable:   1.3
 
     cameras:
         - name:         AB9
@@ -95,9 +94,23 @@ model:
               T:            [897.0, 153.0, -12.0]
               R:            [180, [0, 1, 0]]
               Rformat:      'axis-angle-deg'
+        - name:         CalibrationPlate
+          sprites:      [scene/calibrationplate.yaml]
+          mount:        CalibrationPlateFrame
+          pose:
+              T:            [0, 0, 0]
+              R:            [180, 90, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         CalibrationPlateFrame
+          pose:
+              T:            [771.5, 0, 200]
+              R:            [1, [0, 0, 0]]
+              Rformat:      'quaternion'
+              
 
 relevance:
     - name:         target
+      mount:        CalibrationPlateFrame
       points:
         - point:        [50, 50, 0, 3.141593, 0]
         - point:        [50, -50, 0, 3.141593, 0]

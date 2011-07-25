@@ -29,7 +29,7 @@ class CameraSelector(object):
         """
         self.experiment = experiment
         try:
-            self.target = experiment.relevance_models['target']
+            self.target = experiment.model.scene['CalibrationPlateFrame']
             #self.robot = experiment.model.scene['robot']
             self.vision_graph = experiment.model.coverage_hypergraph(\
                 experiment.relevance_models['cell'], K=[2])
@@ -53,15 +53,16 @@ class CameraSelector(object):
         """
         self.target.set_relative_pose(target_pose)
         self.target.mount = self.experiment.model[current]
-        self.target.visualize()
+        self.experiment.model.scene['CalibrationPlate'].update_visualization()
+        self.experiment.relevance_models['target'].visualize()
         print('Received pose %s from camera %s.' % (self.target.pose, current))
         #self.robot.config = robot_config
         candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
             set([current]))
         for camera in self.experiment.model:
             if camera in candidates:
-                candidates[camera] = \
-                    self.experiment.model[camera].performance(self.target)
+                candidates[camera] = self.experiment.model[camera].performance(\
+                    self.experiment.relevance_models['target'])
                 self.experiment.execute('showval %s %s' % (camera,
                     candidates[camera]))
             else:
