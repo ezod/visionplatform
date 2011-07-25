@@ -100,8 +100,8 @@ model:
           mount:        CalibrationPlateFrame
           pose:
               T:            [0, 0, 0]
-              R:            [270, [0, 1, 0]]
-              Rformat:      'axis-angle-deg'
+              R:            [180, 90, 0]
+              Rformat:      'euler-zyx-deg'
         - name:         CalibrationPlateFrame
           pose:
               T:            [771.5, 0, 200]
