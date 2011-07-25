@@ -2,8 +2,8 @@ model:
     name:           ICRA 2012
 
     res_min_acceptable:     0.9
-    blur_max_acceptable:    6.0
-    angle_max_ideal:        0.7
+    blur_max_acceptable:    10.0
+    angle_max_ideal:        0.2
     angle_max_acceptable:   1.3
 
     cameras:
@@ -30,7 +30,7 @@ model:
           zS:           675.362
           mount:        CameraFrame
           pose:
-              T:            [582.940623642593, 144.04363248103493, -843.5683474996576]
+              T:            [582.940623642593, 144.04363248103493, -847.5683474996576]
               R:            [-0.8695719609408653, [-0.24949017761625591, 0.24285937078035857, 0.3501695229508679]]
               Rformat:      quaternion
         - name:         9B3
@@ -86,7 +86,7 @@ model:
         - name:         LebowTable
           sprites:      [scene/lebowtable.yaml]
           pose:
-              T:            [771.5, 0, -12]
+              T:            [771.5, 0, -16]
               R:            [1, [0, 0, 0]]
               Rformat:      'quaternion'
         - name:         CameraFrame
