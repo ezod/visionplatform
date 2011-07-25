@@ -55,7 +55,6 @@ class CameraSelector(object):
         self.target.mount = self.experiment.model[current]
         self.experiment.model.scene['CalibrationPlate'].update_visualization()
         self.experiment.relevance_models['target'].visualize()
-        print('Received pose %s from camera %s.' % (self.target.pose, current))
         #self.robot.config = robot_config
         candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
             set([current]))
@@ -67,7 +66,6 @@ class CameraSelector(object):
                     candidates[camera]))
             else:
                 self.experiment.execute('showval %s' % camera)
-        print(candidates)
         candidates[current] += threshold
         best = sorted(candidates.keys(), key=candidates.__getitem__)[-1]
         self.experiment.execute('indicate %s' % best)
@@ -111,7 +109,7 @@ if __name__ == '__main__':
     sock.bind(('localhost', opts.port))
     sock.listen(20)
     #port = serial.Serial(port=opts.serialport, baudrate=19200)
-    print('Ready.')
+    experiment.display.message('Ready.')
     channel, details = sock.accept()
     try:
         while True:
@@ -127,7 +125,6 @@ if __name__ == '__main__':
             #port.write('PRNS\r')
             config = []
             bestview = selector.best_view(camera, pose, config, opts.threshold)
-            print('Best view is camera %s.' % bestview)
             channel.sendall(bestview)
     finally:
         #port.close()
