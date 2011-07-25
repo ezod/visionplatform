@@ -1,8 +1,7 @@
 model:
     name:           ICRA 2012
 
-    res_min_ideal:          3.0
-    res_min_acceptable:     0.5
+    res_min_acceptable:     0.9
     blur_max_acceptable:    6.0
     angle_max_ideal:        0.7
     angle_max_acceptable:   1.3
