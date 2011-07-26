@@ -102,7 +102,7 @@
 <procedure name="get_path">
 <interface>
 <oc>
-<par name="intpar_path"/>
+<par name="internalpar_path"/>
 <par name="descr_path"/>
 </oc>
 </interface>
