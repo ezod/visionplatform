@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="24102756">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="524193521">
 <procedure name="main">
 <interface/>
 <body>
@@ -17,8 +17,8 @@
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
 <c></c>
 <c>* Necessary path directories</c>
-<l>path:= ''</l>
-<l>target_descr:= path+'parameters/caltab_100mm.descr'</l>
+<l>get_path (intpar_path, descr_path)</l>
+<l>target_descr:= descr_path+'caltab_100mm.descr'</l>
 <c></c>
 <c>* Open communications with external software</c>
 <l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
@@ -29,7 +29,7 @@
 <l>while (1)</l>
 <l>    if(active = 0)</l>
 <l>        open_cam (cam, AcqHandle)</l>
-<l>        read_cam_par(path+'parameters/internal_'+cam+'.cal', campar)</l>
+<l>        read_cam_par(intpar_path+'internal_'+cam+'.cal', campar)</l>
 <l>        active := 1</l>
 <l>    endif</l>
 <l>    grab_image_start (AcqHandle, -1)</l>
@@ -96,6 +96,26 @@
 <item>string</item>
 </type_list>
 </parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="get_path">
+<interface>
+<oc>
+<par name="intpar_path"/>
+<par name="descr_path"/>
+</oc>
+</interface>
+<body>
+<l>intpar_path := 'C:/Users/JLAH/Desktop/experiment_1/internal parameters/'</l>
+<l>descr_path := 'C:/Users/JLAH/Desktop/experiment_1/plate descriptor/'</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="get_path">
+<parameters>
+<parameter id="descr_path"/>
+<parameter id="intpar_path"/>
 </parameters>
 </docu>
 </procedure>
