@@ -54,7 +54,7 @@ class CameraSelector(object):
         self.target.set_relative_pose(target_pose)
         self.target.mount = self.experiment.model[current]
         self.experiment.model.scene['CalibrationPlate'].update_visualization()
-        self.experiment.relevance_models['target'].visualize()
+        #self.experiment.relevance_models['target'].visualize()
         #self.robot.config = robot_config
         candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
             set([current]))
