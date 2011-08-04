@@ -1,7 +1,7 @@
 """\
 V1LC lens controller module.
 
-@author: Jose Luis Alarcon Herrera
+@author: Jose Alarcon Herrera
 @organization: University of Windsor
 @contact: alarconj@uwindsor.ca
 @license: GPL-3
@@ -47,7 +47,7 @@ class LensController(object):
         return Z, F, I
     
     @property
-    def Z(self):
+    def z(self):
         """\
         The Zoom position of the lens.
 
@@ -57,7 +57,7 @@ class LensController(object):
         return z
         
     @property
-    def F(self):
+    def f(self):
         """\
         The Focus value of the lens.
 
@@ -67,7 +67,7 @@ class LensController(object):
         return f
         
     @property
-    def I(self):
+    def i(self):
         """\
         The state of the Iris of the lens.
 
