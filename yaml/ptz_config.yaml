@@ -1,0 +1,37 @@
+model:
+    name:           PTZ Reconfiguration
+
+    res_min_ideal:          2.8
+    res_min_acceptable:     0.7
+    blur_max_acceptable:    215.0538
+    angle_max_ideal:        0.70
+    angle_max_acceptable:   0.98
+
+    cameras:
+        - name:         C1
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.4765
+          f:            12.253
+          s:            0.00465
+          o:            [763.00966, 579.1370]
+          dim:          [1360, 1024]
+          zS:           1252.15
+          mount:        ServoArm
+          pose:
+              T:            [29, 0, 0]
+              R:            [-90, 0, 180]
+              Rformat:      euler-zyx-deg
+
+    scene:
+        - name:         Floor
+          x:            [-400, 400]
+          y:            [-400, 400]
+          z:            0
+        - name:         ServoArm
+          robot:        robots/pan_tilt_sevos.yaml
+          mount:        Floor
+          config:       [0, 0]
+          pose:
+              T:            [978, 455, 553]
+              R:            [0, 0, 0]
+              Rformat:      'euler-zyx-deg'
