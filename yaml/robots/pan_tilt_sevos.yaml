@@ -1,0 +1,115 @@
+description:    HiTEC HS-645MG pan tilt servos.
+
+pieces:
+    # base
+    - joint:
+          name:         J1
+          type:         revolute
+          axis:         [0, 0, 1]
+          limits:       [0, 90]
+          home:         45.72
+      offset:
+          T:            [-49, -12, 56]
+          R:            [0, 0, 0]
+          Rformat:      euler-zyx-deg
+      primitives:
+        - type:         box
+          pos:          [-10, -12, 2.5]
+          length:       20
+          height:       24
+          width:        5
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-99, -12, 2.5]
+          length:       20
+          height:       24
+          width:        5
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-17, -12, 19]
+          length:       6
+          height:       24
+          width:        38
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-91.5, -12, 19]
+          length:       6
+          height:       24
+          width:        38
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-54.5, -12, 35.5]
+          length:       80
+          height:       24
+          width:        5
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-55, -12, 31]
+          length:       38
+          height:       19
+          width:        38
+          color:        [0, 0, 0]
+          material:     plastic
+        - type:         cylinder
+          pos:          [-49, -12, 50]
+          radius:       4.5
+          axis:         [0, 0, 4]
+          color:        [1, 1, 1]
+          material:     plastic
+        - type:         cylinder
+          pos:          [-49, -12, 54]
+          radius:       12
+          axis:         [0, 0, 2]
+          color:        [1, 1, 1]
+          material:     plastic
+    
+    # arm
+    - joint:
+          name:         J2
+          type:         revolute
+          axis:         [0, 1, 0]
+          limits:       [0, 90]
+          home:         45.72
+      offset:
+          T:            [-28, -12, 44]
+          R:            [0, 0, 0]
+          Rformat:      euler-zyx-deg
+      primitives:
+        - type:         box
+          pos:          [-15.75, 0, 2]
+          length:       61.5
+          height:       24
+          width:        4
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-43.25, 0, 33.5]
+          length:       6.5
+          height:       24
+          width:        67
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [-47, 0, 33.5]
+          length:       38
+          height:       19
+          width:        38
+          color:        [0, 0, 0]
+          material:     plastic
+        - type:         cylinder
+          pos:          [-28, 0, 44]
+          radius:       4.5
+          axis:         [4, 0, 0]
+          color:        [1, 1, 1]
+          material:     plastic
+        - type:         cylinder
+          pos:          [-24, 0, 44]
+          radius:       12
+          axis:         [2, 0, 0]
+          color:        [1, 1, 1]
+          material:     plastic
