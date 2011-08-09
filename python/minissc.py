@@ -134,3 +134,20 @@ class ServoController(object):
         except InputError, (instance):
             print instance.message
     
+    def home(self, servos):
+        """
+        Move the servo or servos to the initial position.
+        
+        @param servos: The servo or servos to be moved.
+        @type servos: C{int, list, str}
+        """
+        
+        if servos == 'all':
+            for servo in self.servos:
+                self.move(self.servos[servo].id, 45.72)
+        elif type(servos) == 'list':
+            for servo in range(len(servos)):
+                self.move(self.servos[servo].id, 45.72)
+        elif type(servos) == 'int':
+            self.move(self.servos[servos].id, 45.72)
+    
