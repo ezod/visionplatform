@@ -21,8 +21,8 @@ class LensController(object):
         @param port: Serial port of the V1LC.
         @type port: C{str}
         """
-        self.port = serial.Serial(port=port, baudrate=9600, 
-            bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, 
+        self.port = serial.Serial(port=port, baudrate=9600, \
+            bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, \
             stopbits=serial.STOPBITS_ONE)
         self.port.write('T255\n')
 
