@@ -143,11 +143,11 @@ class ServoController(object):
         """
         
         if servos == 'all':
-            for servo in self.servos:
+            for servo in range(len(self.servos)):
                 self.move(self.servos[servo].id, 45.72)
-        elif type(servos) == 'list':
-            for servo in range(len(servos)):
+        elif isinstance(servos, list):
+            for servo in servos:
                 self.move(self.servos[servo].id, 45.72)
-        elif type(servos) == 'int':
+        elif isinstance(servos, int):
             self.move(self.servos[servos].id, 45.72)
     
