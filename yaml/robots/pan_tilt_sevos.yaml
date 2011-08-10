@@ -6,11 +6,11 @@ pieces:
           name:         J1
           type:         revolute
           axis:         [0, 0, 1]
-          limits:       [0, 90]
-          home:         45.72
+          limits:       [-90, 0]
+          home:         -45.72
       offset:
           T:            [-49, -12, 56]
-          R:            [0, 0, 0]
+          R:            [0, 0, -135.72]
           Rformat:      euler-zyx-deg
       primitives:
         - type:         box
@@ -72,12 +72,12 @@ pieces:
     - joint:
           name:         J2
           type:         revolute
-          axis:         [0, 1, 0]
-          limits:       [0, 90]
-          home:         45.72
+          axis:         [1, 0, 0]
+          limits:       [-90, 0]
+          home:         -45.72
       offset:
           T:            [-28, -12, 44]
-          R:            [0, 0, 0]
+          R:            [-45.72, 0, 0]
           Rformat:      euler-zyx-deg
       primitives:
         - type:         box
