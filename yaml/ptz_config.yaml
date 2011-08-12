@@ -30,7 +30,7 @@ model:
         - name:         ServoArm
           robot:        robots/pan_tilt_sevos.yaml
           mount:        Floor
-          config:       [0, 0]
+          config:       [45.72, 45.72]
           pose:
               T:            [978, 455, 553]
               R:            [0, 0, 0]
