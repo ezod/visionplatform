@@ -104,6 +104,7 @@ class ServoController(object):
                 stopbits=serial.STOPBITS_ONE)
         except InputError, (instance):
             print instance.message
+        self.home('all')
     
     def where(self, servo):
         """
@@ -114,7 +115,7 @@ class ServoController(object):
         @return: The last position sent to the servo.
         @rtype: C{float}
         """
-        return self.servos[servo].wh * 0.36
+        return 90 - (self.servos[servo].wh * 0.36)
     
     def move(self, servo, pos_deg):
         """
@@ -126,7 +127,7 @@ class ServoController(object):
         @type pos_deg: C{float}
         """
         
-        pos = int(round(pos_deg / 0.36))
+        pos = int(round((90 - pos_deg) / 0.36))
         try:
             self.servos[servo].update_pos(pos)
             self.port.write(chr(255) + chr(self.servos[servo].id) + \
