@@ -9,7 +9,7 @@ model:
 
     cameras:
         - name:         C1
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarh10z1218mp.yaml]
           A:            4.4765
           f:            12.253
           s:            0.00465
@@ -21,7 +21,6 @@ model:
               T:            [29, 0, 0]
               R:            [-90, 0, 180]
               Rformat:      euler-zyx-deg
-
     scene:
         - name:         Floor
           x:            [-400, 400]
