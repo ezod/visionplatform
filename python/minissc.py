@@ -115,9 +115,9 @@ class ServoController(object):
             servolist.append(servo)
         return servolist
     
-    def add_servo(self, servos):
+    def add_servos(self, servos):
         """
-        Adds one servo to the servo controller.
+        Adds a number of servos to the servo controller.
         
         @param servos: The number of servos to be added.
         @type servos: C{int}
