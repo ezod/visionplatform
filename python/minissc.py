@@ -76,8 +76,7 @@ class Servo(object):
         if pos >= 0 and pos <= 250:
             self.pos = pos
         else:
-            raise InputError('The position range is between 0 and \
-                90 degrees.')
+            raise InputError('The position range is between 0 and 90 degrees.')
     
 class ServoController(object):
     """
@@ -104,7 +103,32 @@ class ServoController(object):
                 stopbits=serial.STOPBITS_ONE)
         except InputError, (instance):
             print instance.message
-        self.home('all')
+        self.home()
+    
+    @property
+    def whos(self):
+        """
+        Return a list of all servos under control.
+        """
+        servolist = []
+        for servo in range(len(self.servos)):
+            servolist.append(servo)
+        return servolist
+    
+    def add_servo(self, servos):
+        """
+        Adds one servo to the servo controller.
+        
+        @param servos: The number of servos to be added.
+        @type servos: C{int}
+        """
+        if len(self.servos) + servos <= 8:
+            for i in range(len(self.servos), len(self.servos) + servos):
+                servo = Servo(i, 127)
+                self.servos.append(servo)
+                self.home(self.servos[i].id)
+        else:
+            print 'The total number of servos must not exceed 8.'
     
     def where(self, servo):
         """
@@ -117,38 +141,55 @@ class ServoController(object):
         """
         return 90 - (self.servos[servo].wh * 0.36)
     
-    def move(self, servo, pos_deg):
+    def move(self, pos_deg, servos=None):
         """
-        Move the servo to the desired position in degrees.
+        Move the servo or servos to the desired position in degrees.
         
-        @param servo: The servo.
-        @type servo: C{int}
         @param pos_deg: The position in degrees.
         @type pos_deg: C{float}
+        @param servos: The servo or servos to be moved.
+        @type servos: C{None, int, list}
         """
         
         pos = int(round((90 - pos_deg) / 0.36))
         try:
-            self.servos[servo].update_pos(pos)
-            self.port.write(chr(255) + chr(self.servos[servo].id) + \
-                chr(self.servos[servo].wh))
+            if servos == None:
+                for servo in range(len(self.servos)):
+                    self.servos[servo].update_pos(pos)
+                    self.port.write(chr(255) + \
+                        chr(self.servos[servo].id) + \
+                        chr(self.servos[servo].wh))
+            elif isinstance(servos, list):
+                for servo in servos:
+                    self.servos[servo].update_pos(pos)
+                    self.port.write(chr(255) + \
+                        chr(self.servos[servo].id) + \
+                        chr(self.servos[servo].wh))
+            elif isinstance(servos, int):
+                self.servos[servos].update_pos(pos)
+                self.port.write(chr(255) + \
+                    chr(self.servos[servos].id) + \
+                    chr(self.servos[servos].wh))
         except InputError, (instance):
             print instance.message
     
-    def home(self, servos):
+    def home(self, servos=None):
         """
         Move the servo or servos to the initial position.
         
         @param servos: The servo or servos to be moved.
-        @type servos: C{int, list, str}
+        @type servos: C{None, int, list}
         """
         
-        if servos == 'all':
+        if servos == None:
             for servo in range(len(self.servos)):
-                self.move(self.servos[servo].id, 45.72)
+                self.servos[servo].update_pos(45.72)
+                self.move(45.72, self.servos[servo].id)
         elif isinstance(servos, list):
             for servo in servos:
-                self.move(self.servos[servo].id, 45.72)
+                self.servos[servo].update_pos(45.72)
+                self.move(45.72, self.servos[servo].id)
         elif isinstance(servos, int):
-            self.move(self.servos[servos].id, 45.72)
+            self.servos[servos].update_pos(45.72)
+            self.move(45.72, self.servos[servos].id)
     
