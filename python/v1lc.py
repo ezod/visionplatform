@@ -37,14 +37,13 @@ class LensController(object):
         self.port.write('?\n')
         state = []
         line = self.port.readline()
-        for i in range(3):
+        for i in range(2):
             line = self.port.readline()
             value = line.partition(':')[2]
             state.append(value.partition('\r')[0])
-        Z = int(state[0])
-        F = int(state[1])
-        I = int(state[2])
-        return Z, F, I
+        z = int(state[0])
+        f = int(state[1])
+        return z, f
     
     @property
     def z(self):
@@ -53,7 +52,7 @@ class LensController(object):
 
         @rtype: C{int}
         """
-        z, f, i = self.query_status()
+        z, f = self.query_status()
         return z - 44
         
     @property
@@ -63,7 +62,7 @@ class LensController(object):
 
         @rtype: C{int}
         """
-        z, f, i = self.query_status()
+        z, f = self.query_status()
         return f - 44
     
     def zoom(self, value):
