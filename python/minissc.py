@@ -180,16 +180,5 @@ class ServoController(object):
         @param servos: The servo or servos to be moved.
         @type servos: C{None, int, list}
         """
-        
-        if servos == None:
-            for servo in range(len(self.servos)):
-                self.servos[servo].update_pos(45.72)
-                self.move(45.72, self.servos[servo].id)
-        elif isinstance(servos, list):
-            for servo in servos:
-                self.servos[servo].update_pos(45.72)
-                self.move(45.72, self.servos[servo].id)
-        elif isinstance(servos, int):
-            self.servos[servos].update_pos(45.72)
-            self.move(45.72, self.servos[servos].id)
+        self.move(45.72, servos)
     
