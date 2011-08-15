@@ -1,7 +1,7 @@
 description:    HiTEC HS-645MG pan tilt servos.
 
 pieces:
-    # base
+    # servo 1
     - joint:
           name:         J1
           type:         revolute
@@ -93,7 +93,7 @@ pieces:
           color:        [1, 1, 1]
           material:     plastic
         
-    # arm
+    # servo 2
     - joint:
           name:         J2
           type:         revolute
@@ -101,7 +101,7 @@ pieces:
           limits:       [0, 90]
           home:         45.72
       offset:
-          T:            [-23, -12, 44]
+          T:            [-23, 0, 44]
           R:            [45.72, 0, 0]
           Rformat:      euler-zyx-deg
       primitives:
@@ -162,4 +162,45 @@ pieces:
           radius:       12
           axis:         [2, 0, 0]
           color:        [1, 1, 1]
+          material:     plastic
+    
+    # mount
+    - joint:
+          name:         J3
+          type:         revolute
+          axis:         [1, 0, 0]
+          limits:       [0, 0.0001]
+          home:         0
+      offset:
+          T:            [25.25, 0, 25.25]
+          R:            [0, 0, 0]
+          Rformat:      euler-zyx-deg
+      primitives:
+        - type:         box
+          pos:          [1.5, 0, 0]
+          length:       3
+          height:       38
+          width:        50.5
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [49, 0, 0]
+          length:       3
+          height:       38
+          width:        50.5
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [25.25, 0, 23.75]
+          length:       50.5
+          height:       38
+          width:        3
+          color:        [0.9, 0.9, 0.9]
+          material:     plastic
+        - type:         box
+          pos:          [25.25, 0, -23.75]
+          length:       50.5
+          height:       38
+          width:        3
+          color:        [0.9, 0.9, 0.9]
           material:     plastic

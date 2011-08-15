@@ -18,7 +18,7 @@ model:
           zS:           1252.15
           mount:        ServoArm
           pose:
-              T:            [29, 0, 0]
+              T:            [0, 62.5, 45]
               R:            [-90, 0, 180]
               Rformat:      euler-zyx-deg
     scene:
@@ -29,7 +29,7 @@ model:
         - name:         ServoArm
           robot:        robots/pan_tilt_sevos.yaml
           mount:        Floor
-          config:       [45.72, 45.72]
+          config:       [45.72, 45.72, 0]
           pose:
               T:            [978, 455, 553]
               R:            [0, 0, 0]
