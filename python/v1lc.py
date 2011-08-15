@@ -65,20 +65,6 @@ class LensController(object):
         """
         z, f, i = self.query_status()
         return f - 44
-        
-    @property
-    def i(self):
-        """\
-        The state of the Iris of the lens.
-
-        @rtype: C{int}
-        """
-        
-        z, f, i = self.query_status()
-        if i > 90 and i <= 100:
-            return 'open'
-        elif i >= 0 and i < 10:
-            return 'close'
     
     def zoom(self, value):
         """
