@@ -54,7 +54,7 @@ class LensController(object):
         @rtype: C{int}
         """
         z, f, i = self.query_status()
-        return z
+        return z - 44
         
     @property
     def f(self):
@@ -64,7 +64,7 @@ class LensController(object):
         @rtype: C{int}
         """
         z, f, i = self.query_status()
-        return f
+        return f - 44
         
     @property
     def i(self):
@@ -75,7 +75,10 @@ class LensController(object):
         """
         
         z, f, i = self.query_status()
-        return i
+        if i > 90 and i <= 100:
+            return 'open'
+        elif i >= 0 and i < 10:
+            return 'close'
     
     def zoom(self, value):
         """
@@ -84,10 +87,11 @@ class LensController(object):
         @param value: The zoom value.
         @type value: C{int}
         """
-        if value >= 44 and value <=180:
-            self.port.write('Z%03d\n' % value)
+        val = value + 44
+        if val >= 44 and val <= 180:
+            self.port.write('Z%03d\n' % val)
         else:
-            print 'The range must be between 44 and 180'
+            print 'The range must be between 0 and 136'
 
     def focus(self, value):
         """
@@ -96,10 +100,11 @@ class LensController(object):
         @param value: The focus value.
         @type value: C{int}
         """
-        if value >= 44 and value <=180:
-            self.port.write('F%03d\n' % value)
+        val = value + 44
+        if val >= 44 and val <= 180:
+            self.port.write('F%03d\n' % val)
         else:
-            print 'The range must be between 44 and 180'
+            print 'The range must be between 0 and 136'
 
     def iris(self, state='open'):
         """
