@@ -46,10 +46,6 @@ model:
           robot:        robots/mitsubishirv1a.yaml
           mount:        VisionPlatform
           config:       [0.15, -0.16, 90.22, -0.31, -0.14, 0.06, 8.0]
-          pose:
-              T:            [978, 455, 553]
-              R:            [0, 0, 0]
-              Rformat:      'euler-zyx-deg'
         - name:         Target
           x:            [-108, 108]
           y:            [-140, 140]
