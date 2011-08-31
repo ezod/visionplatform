@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="586698373">
+<procedure name="main">
+<interface/>
+<body>
+<c>* This program communicates with the Mitsubishi RV1A robot. The program </c>
+<c>* takes one image from 5 different cameras in a sequence. The program waits</c>
+<c>* for the robot to be in position.</c>
+<c>* Once the images have been taken, the program sends confirmation to the </c>
+<c>* robot so that it can move on to the next position.</c>
+<c></c>
+<l>path:= ''</l>
+<l>img_path:= path+'images/'</l>
+<c></c>
+<l>dev_close_window ()</l>
+<l>dev_update_off()</l>
+<l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
+<l>open_serial ('COM8', SerialHandle)</l>
+<l>set_serial_param (SerialHandle, 19200, 8, 'none', 'none', 1, 1000, 30000)</l>
+<c></c>
+<l>out:=[80, 82, 78, 49, 13]</l>
+<l>cam:= ['AB9', '99B', '9B3', 'ABB', 'ABA']</l>
+<l>joints:= 200</l>
+<l>for pos:=1 to joints by 1</l>
+<l>    read_serial (SerialHandle, 1, in)</l>
+<l>    if (in = 49)</l>
+<l>        for i:=1 to 5 by 1</l>
+<l>            grab_img (image, cam[i], img_path, pos)</l>
+<l>            dev_display(image)</l>
+<c>            * Do tracking or reconstruction or whatever</c>
+<l>        endfor</l>
+<l>    endif</l>
+<l>    write_serial (SerialHandle, out)</l>
+<l>endfor</l>
+<l>close_serial(SerialHandle)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="grab_img">
+<interface>
+<oo>
+<par name="Image"/>
+</oo>
+<ic>
+<par name="cam"/>
+<par name="path"/>
+<par name="i"/>
+</ic>
+</interface>
+<body>
+<c>* This program will open a framegrabber of the specified camera.</c>
+<c>* The program will take an image and return it, it will also save the </c>
+<c>* image on the defined path using the name of the camera, and a general </c>
+<c>* purpose index.</c>
+<c>* If 'none' is passed as the path, then the image is not saved.</c>
+<l>open_framegrabber ('1394IIDC', 1, 1, 0, 0, 0, 0, 'progressive', 8, \
+                   'default', -1, 'false', 'default', \
+                   '000F310000006'+cam, 0, -1, AcqHandle)</l>
+<l>set_framegrabber_param (AcqHandle, 'camera_type', '7:1:0')</l>
+<l>set_framegrabber_param (AcqHandle, 'shutter', 80)</l>
+<l>set_framegrabber_param (AcqHandle, 'grab_timeout', 3000)</l>
+<l>grab_image_start (AcqHandle, -1)</l>
+<l>grab_image_async (Image, AcqHandle, -1)</l>
+<l>if (path = 'none')</l>
+<c>    ** just return image</c>
+<l>else</l>
+<l>    write_image (Image, 'tiff packbits', 0, path+'img_'+cam+'_'+i$'.02')</l>
+<l>endif</l>
+<l>close_framegrabber (AcqHandle)</l>
+<l>return ()</l>
+</body>
+<docu id="grab_img">
+<parameters>
+<parameter id="Image"/>
+<parameter id="cam"/>
+<parameter id="i"/>
+<parameter id="path"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
