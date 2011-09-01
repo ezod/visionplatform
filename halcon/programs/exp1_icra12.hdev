@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="586698373">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="586700421">
 <procedure name="main">
 <interface/>
 <body>
@@ -15,7 +15,7 @@
 <l>dev_close_window ()</l>
 <l>dev_update_off()</l>
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
-<l>open_serial ('COM8', SerialHandle)</l>
+<l>open_serial ('COM4', SerialHandle)</l>
 <l>set_serial_param (SerialHandle, 19200, 8, 'none', 'none', 1, 1000, 30000)</l>
 <c></c>
 <l>out:=[80, 82, 78, 49, 13]</l>
