@@ -115,13 +115,13 @@ def parse_calibration_files(directory):
 
 if __name__ == '__main__':
     try:
-        rp = absolute_poses(parse_calibration_files(sys.argv[2]), sys.argv[3])
+        rp = absolute_poses(parse_calibration_files(sys.argv[1]), sys.argv[2])
         print('    cameras:')
         for camera in rp:
-            f, k, s, o, dim = parse_internal(os.path.join(sys.argv[2], 'internal_%s.cal' % camera))
+            f, k, s, o, dim = parse_internal(os.path.join(sys.argv[1], 'internal_%s.cal' % camera))
             print('        - name:         %s' % camera)
             print('          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]')
-            print('          A:            %f' % float(sys.argv[4]))
+            print('          A:            %f' % float(sys.argv[3]))
             print('          f:            %f' % f)
             if abs(s[0] - s[1]) < 1e-8:
                 print('          s:            %f' % s[0])
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 print('          s:            [%f, %f]' % tuple(s))
             print('          o:            [%f, %f]' % tuple(o))
             print('          dim:          [%d, %d]' % tuple(dim))
-            print('          zS:           %f' % float(sys.argv[5]))
+            print('          zS:           %f' % float(sys.argv[4]))
             print('          pose:')
             print('              T:            %s' % list(rp[camera][0].T))
             print('              R:            %s' % [rp[camera][0].R.Q.a, list(rp[camera][0].R.Q.v)])
