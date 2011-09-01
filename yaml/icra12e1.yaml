@@ -1,0 +1,122 @@
+model:
+    name:           ICRA 2012 Experiment 1
+
+    res_min_acceptable:     0.9
+    blur_max_acceptable:    10.0
+    angle_max_ideal:        0.2
+    angle_max_acceptable:   1.3
+
+    cameras:
+        - name:         ABA
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.804346
+          s:            [0.009293, 0.009300]
+          o:            [335.775708, 260.357692]
+          dim:          [680, 512]
+          zS:           800.000000
+          mount:        CameraFrame
+          pose:
+              T:            [-642.1062210847192, -764.3254563969367, -817.8192903117153]
+              R:            [0.5609923091086125, [-0.3869064768348478, -0.1206530136001708, -0.7218267456271473]]
+              Rformat:      quaternion
+        - name:         ABB
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.361278
+          s:            [0.009119, 0.009300]
+          o:            [362.493875, 147.240106]
+          dim:          [680, 512]
+          zS:           800.000000
+          mount:        CameraFrame
+          pose:
+              T:            [121.33898857067105, -556.3162919056699, -699.6623959471467]
+              R:            [0.7194922451191494, [-0.17940000295840167, -0.2142608672532432, -0.6357977895298113]]
+              Rformat:      quaternion
+        - name:         9B3
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.495995
+          s:            [0.009126, 0.009300]
+          o:            [386.525878, 87.345056]
+          dim:          [680, 512]
+          zS:           800.000000
+          mount:        CameraFrame
+          pose:
+              T:            [209.21833615815342, 194.99488730356754, -605.6472663545787]
+              R:            [-0.7323596016282189, [-0.31801321237266406, -0.0086561346530145, 0.6020316260226791]]
+              Rformat:      quaternion
+        - name:         99B
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.671230
+          s:            [0.009268, 0.009300]
+          o:            [348.782628, 255.860450]
+          dim:          [680, 512]
+          zS:           800.000000
+          mount:        CameraFrame
+          pose:
+              T:            [-606.0241293788869, 15.738009510587943, -963.4096904971505]
+              R:            [-0.6087756918024102, [0.12069243556359789, -0.2193921264559694, 0.7527898729265349]]
+              Rformat:      quaternion
+        - name:         AB9
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.444494
+          s:            [0.009177, 0.009300]
+          o:            [379.097481, 130.093491]
+          dim:          [680, 512]
+          zS:           800.000000
+          mount:        CameraFrame
+          pose:
+              T:            [102.235519, -139.952304, -754.535027]
+              R:            [-0.6653606869123467, [-0.015885927397906046, 0.08992849308266923, 0.7409154203078783]]
+              Rformat:      quaternion
+
+    scene:
+        - name:         VisionPlatform
+          sprites:      [scene/visionplatform.yaml]
+          pose:
+              T:            [-978, -455, -553]
+              R:            [0, 0, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         RV1A
+          robot:        robots/mitsubishirv1a.yaml
+          config:       [0.54, 64.40, 71.86, -154.19, 45.43, -194.15, 8.0]
+        - name:         CameraFrame
+          mount:        CameraFrameFrame
+          pose:
+              T:            [0, 0, 0]
+              R:            [180, [1, 0, 0]]
+              Rformat:      'axis-angle-deg'
+        - name:         CameraFrameFrame
+          pose:
+              T:            [469.5889, -17.9072, 350.0681]
+              R:            [-0.68, [-0.1327, -0.7171, 0.0843]]
+              Rformat:      'quaternion'
+        - name:         CalibrationPlate
+          sprites:      [scene/calibrationplate.yaml]
+          mount:        CalibrationPlateFrame
+          pose:
+              T:            [0, 0, 0]
+              R:            [0, 90, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         CalibrationPlateFrame
+          mount:        RV1A
+
+
+relevance:
+    - name:         target
+      mount:        CalibrationPlateFrame
+      points:
+        - point:        [50, 50, 0, 3.141593, 0]
+        - point:        [50, -50, 0, 3.141593, 0]
+        - point:        [-50, -50, 0, 3.141593, 0]
+        - point:        [-50, 50, 0, 3.141593, 0]
+    - name:         cell
+      step:         100
+      ddiv:         2.0
+      ranges:
+        - x:            [200, 1500]
+          y:            [-450, 450]
+          z:            [0, 800]
