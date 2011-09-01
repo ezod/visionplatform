@@ -33,8 +33,7 @@ def gen_melfa_file(filename, joints):
     f.write('%d END\n' % line)
     f.write('%d PRINT #1, M1\n' % (line + 5))
     f.write('%d INPUT #1, M2\n' % (line + 10))
-    f.write('%d M1 = M1 + 1\n' % (line + 15))
-    f.write('%d RETURN' % (line + 20))
+    f.write('%d RETURN' % (line + 15))
     f.close()
 
 if __name__ == '__main__':
