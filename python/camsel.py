@@ -60,8 +60,8 @@ class CameraSelector(object):
             set([current]))
         for camera in self.experiment.model:
             if camera in candidates:
-                candidates[camera] = self.experiment.model[camera].performance(\
-                    self.experiment.relevance_models['target'])
+                candidates[camera] = self.experiment.model.performance(\
+                    self.experiment.relevance_models['target'], subset=[camera])
                 self.experiment.execute('showval %s %s' % (camera,
                     candidates[camera]))
             else:
