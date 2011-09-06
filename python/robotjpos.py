@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_option('-s', '--serialport', dest='serialport', action='store',
         default='COM1', help='serial port for robot')
     opts, args = parser.parse_args()
-    port = serial.Serial(port=opts.serialport, baudrate=19200)
+    port = serial.Serial(port=opts.serialport, baudrate=19200, timeout=0.2)
     i = 1
     try:
         while True:
