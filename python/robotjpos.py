@@ -14,6 +14,7 @@ RECV: QoKJ1;10.90;J2;70.76;J3;64.16;J4;-160.00;J5;40.06;J6;-183.40;;****,****;\
 @license: GPL-3
 """
 
+import sys
 import serial
 from optparse import OptionParser
 
@@ -23,14 +24,19 @@ if __name__ == '__main__':
         default='COM1', help='serial port for robot')
     opts, args = parser.parse_args()
     port = serial.Serial(port=opts.serialport, baudrate=19200, timeout=0.2)
-    i = 1
+    if len(args):
+        f = open(args[0], 'w')
+    else:
+        f = sys.stdout
+    p = 1
     try:
         while True:
             port.write('1;1;JPOSF.\r')
             rawpos = port.read(128)
             rawpos = rawpos.split(';;')[0][3:].split(';')
-            pos = (i,) + tuple([float(rawpos[2 * i + 1]) for i in range(6)])
-            print('J%i=(%+.2f,%+.2f,%+.2f,%+.2f,%+.2f,%+.2f)' % pos)
-            i += 1
+            pos = (p,) + tuple([float(rawpos[2 * i + 1]) for i in range(6)])
+            f.write('J%i=(%+.2f,%+.2f,%+.2f,%+.2f,%+.2f,%+.2f)\n' % pos)
+            p += 1
     finally:
         port.close()
+        f.close()
