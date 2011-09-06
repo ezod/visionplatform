@@ -59,20 +59,7 @@ model:
               T:            [-606.0241293788869, 15.738009510587943, -963.4096904971505]
               R:            [-0.6087756918024102, [0.12069243556359789, -0.2193921264559694, 0.7527898729265349]]
               Rformat:      quaternion
-        - name:         AB9
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
-          A:            4.476500
-          f:            12.444494
-          s:            [0.009177, 0.009300]
-          o:            [379.097481, 130.093491]
-          dim:          [680, 512]
-          zS:           800.000000
-          mount:        CameraFrame
-          pose:
-              T:            [102.235519, -139.952304, -754.535027]
-              R:            [-0.6653606869123467, [-0.015885927397906046, 0.08992849308266923, 0.7409154203078783]]
-              Rformat:      quaternion
-
+       
     scene:
         - name:         VisionPlatform
           sprites:      [scene/visionplatform.yaml]
@@ -80,9 +67,7 @@ model:
               T:            [-978, -455, -553]
               R:            [0, 0, 0]
               Rformat:      'euler-zyx-deg'
-        - name:         RV1A
-          robot:        robots/mitsubishirv1a.yaml
-          config:       [0.54, 64.40, 71.86, -154.19, 45.43, -194.15, 8.0]
+        
         - name:         CameraFrame
           mount:        CameraFrameFrame
           pose:
@@ -102,7 +87,7 @@ model:
               R:            [0, 90, 0]
               Rformat:      'euler-zyx-deg'
         - name:         CalibrationPlateFrame
-          mount:        RV1A
+         
 
 
 relevance:

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="1009760613">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="586135909">
 <procedure name="main">
 <interface/>
 <body>
@@ -24,7 +24,7 @@
 <l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
                     ['infinite','TCP'], osock)</l>
 <c>* Initialize camera selection</c>
-<l>cam := 'AB9'</l>
+<l>cam := 'ABB'</l>
 <l>active := 0</l>
 <l>while (1)</l>
 <l>    if(active = 0)</l>
