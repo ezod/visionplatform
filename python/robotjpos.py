@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_option('-s', '--serialport', dest='serialport', action='store',
         default='COM1', help='serial port for robot')
     opts, args = parser.parse_args()
-    port = serial.Serial(port=opts.serialport, baudrate=19200, timeout=0.2)
+    port = serial.Serial(port=opts.serialport, baudrate=19200, timeout=0.3)
     if len(args):
         f = open(args[0], 'w')
     else:
@@ -32,10 +32,21 @@ if __name__ == '__main__':
     try:
         while True:
             port.write('1;1;JPOSF.\r')
-            rawpos = port.read(128)
-            rawpos = rawpos.split(';;')[0][3:].split(';')
-            pos = (p,) + tuple([float(rawpos[2 * i + 1]) for i in range(6)])
-            f.write('J%i=(%+.2f,%+.2f,%+.2f,%+.2f,%+.2f,%+.2f)\n' % pos)
+            rawpos = ''
+            while True:
+                rawpos += port.read(128)
+                try:
+                    if len(rawpos) > 3 and not rawpos.startswith('QoK'):
+                        print('Warning: non-QoK at position %i' % p)
+                        p -= 1
+                        break
+                    splitpos = rawpos.split(';;')[0][3:].split(';')
+                    pos = (p,) + tuple([float(splitpos[2 * i + 1]) \
+                        for i in range(6)])
+                    f.write('J%i=(%+.2f,%+.2f,%+.2f,%+.2f,%+.2f,%+.2f)\n' % pos)
+                    break
+                except IndexError:
+                    continue
             p += 1
     finally:
         port.close()
