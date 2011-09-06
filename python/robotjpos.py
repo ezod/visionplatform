@@ -23,8 +23,14 @@ if __name__ == '__main__':
         default='COM1', help='serial port for robot')
     opts, args = parser.parse_args()
     port = serial.Serial(port=opts.serialport, baudrate=19200)
-    while True:
-        port.write('1;1;JPOSF.\r')
-        rawpos = port.read(128).split(';;')[0][3:].split(';')
-        pos = [float(rawpos[2 * i + 1]) for i in range(6)]
-        print(pos)
+    i = 1
+    try:
+        while True:
+            port.write('1;1;JPOSF.\r')
+            rawpos = port.read(128)
+            rawpos = rawpos.split(';;')[0][3:].split(';')
+            pos = (i,) + tuple([float(rawpos[2 * i + 1]) for i in range(6)])
+            print('J%i=(%+.2f,%+.2f,%+.2f,%+.2f,%+.2f,%+.2f)' % pos)
+            i += 1
+    finally:
+        port.close()
