@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="586700421">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="727474345">
 <procedure name="main">
 <interface/>
 <body>
@@ -9,27 +9,28 @@
 <c>* Once the images have been taken, the program sends confirmation to the </c>
 <c>* robot so that it can move on to the next position.</c>
 <c></c>
-<l>path:= ''</l>
-<l>img_path:= path+'images/'</l>
+<c></c>
+<l>img_path := 'C:/Users/JLAH/Desktop/experiment_2/robot/images/'</l>
 <c></c>
 <l>dev_close_window ()</l>
 <l>dev_update_off()</l>
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
+<c></c>
 <l>open_serial ('COM4', SerialHandle)</l>
 <l>set_serial_param (SerialHandle, 19200, 8, 'none', 'none', 1, 1000, 30000)</l>
 <c></c>
 <l>out:=[80, 82, 78, 49, 13]</l>
-<l>cam:= ['AB9', '99B', '9B3', 'ABB', 'ABA']</l>
-<l>joints:= 200</l>
+<l>cam:= ['99B', '9B3', 'ABB', 'ABA']</l>
+<l>joints:= 103</l>
 <l>for pos:=1 to joints by 1</l>
-<l>    read_serial (SerialHandle, 1, in)</l>
-<l>    if (in = 49)</l>
-<l>        for i:=1 to 5 by 1</l>
+<l>   read_serial (SerialHandle, 1, in)</l>
+<l>    *if (in = 49)</l>
+<l>        for i:=0 to 3 by 1</l>
 <l>            grab_img (image, cam[i], img_path, pos)</l>
 <l>            dev_display(image)</l>
 <c>            * Do tracking or reconstruction or whatever</c>
 <l>        endfor</l>
-<l>    endif</l>
+<l>   *endif</l>
 <l>    write_serial (SerialHandle, out)</l>
 <l>endfor</l>
 <l>close_serial(SerialHandle)</l>
@@ -66,7 +67,7 @@
 <l>if (path = 'none')</l>
 <c>    ** just return image</c>
 <l>else</l>
-<l>    write_image (Image, 'tiff packbits', 0, path+'img_'+cam+'_'+i$'.02')</l>
+<l>    write_image (Image, 'tiff packbits', 0, path+'img_'+cam+'_'+i$'.03')</l>
 <l>endif</l>
 <l>close_framegrabber (AcqHandle)</l>
 <l>return ()</l>
