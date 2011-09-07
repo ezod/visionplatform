@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="590367563">
+<procedure name="main">
+<interface/>
+<body>
+<c>* After all required initializations, this program does the following </c>
+<c>* in a loop:</c>
+<c>* -Take an image with the selected camera.</c>
+<c>* -Find and estimate the pose of the calibration target.</c>
+<c>* -if successful, display the coordinate axis of the target, else continue</c>
+<c>* -Send the pose to adolphus for coverage evaluation and retrieve the </c>
+<c>* camera with the best view</c>
+<c>* -Select the new best view and repeat the process.</c>
+<c>* Prepare environment</c>
+<l>dev_update_off()</l>
+<l>dev_close_window ()</l>
+<l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
+<c></c>
+<c>* Necessary path directories</c>
+<l>internalpar_path := '/home/aaron/school/research/icra12/experiments/e1/calibration/'</l>
+<l>descr_path := '/opt/halcon/calib/'</l>
+<l>image_path := '/home/aaron/school/research/icra12/experiments/e1/images/'</l>
+<l>target_descr:= descr_path+'caltab_100mm.descr'</l>
+<c></c>
+<c>* Open communications with external software</c>
+<l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
+                    ['infinite','TCP'], osock)</l>
+<c>* Initialize camera selection</c>
+<l>cam := 'ABB'</l>
+<l>active := 0</l>
+<l>for i := 1 to 104 by 1</l>
+<l>    if(active = 0)</l>
+<l>        read_cam_par(internalpar_path+'internal_'+cam+'.cal', campar)</l>
+<l>        active := 1</l>
+<l>    endif</l>
+<l>    read_image(image, image_path+'img_'+cam+'_'+(i)$'03'+'.tif')</l>
+<l>    dev_display(image)</l>
+<l>    get_pose (image, campar, target_descr, target_mat_string, target_pose)</l>
+<l>    if (target_mat_string = '')</l>
+<l>        continue</l>
+<l>    endif</l>
+<l>    outstring := cam + ',' + target_mat_string</l>
+<l>    try</l>
+<l>        send_data(osock, 'z', outstring, [])</l>
+<l>        receive_data(osock, 'z', newcam, from)</l>
+<l>    catch(Exception)</l>
+<l>        break</l>
+<l>    endtry</l>
+<l>    if (newcam # cam)</l>
+<l>       active := 0</l>
+<l>       cam := newcam</l>
+<l>    endif</l>
+<l>endfor</l>
+<l>close_socket(osock)</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="open_cam">
+<interface>
+<ic>
+<par name="cam"/>
+</ic>
+<oc>
+<par name="AcqHandle"/>
+</oc>
+</interface>
+<body>
+<l>open_framegrabber ('1394IIDC', 1, 1, 0, 0, 0, 0, 'progressive', 8, \
+                   'default', -1, 'false', 'default', \
+                   '000F310000006'+cam, 0, -1, AcqHandle)</l>
+<l>set_framegrabber_param (AcqHandle, 'camera_type', '7:1:0')</l>
+<l>set_framegrabber_param (AcqHandle, 'video_gain', 1)</l>
+<l>set_framegrabber_param (AcqHandle, 'shutter', 75)</l>
+<l>set_framegrabber_param (AcqHandle, 'grab_timeout', 3000)</l>
+<l>return ()</l>
+</body>
+<docu id="open_cam">
+<abstract lang="en_US">This precedure opens a frame grabber for a firewire 1394IIDC compliant camera. The name of the camera are the last three letters of the firewire ID of the camera.</abstract>
+<short lang="en_US">Open frame-grabber for firewire camera.</short>
+<parameters>
+<parameter id="AcqHandle">
+<description lang="en_US">The Handle of the frame-grabber.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+</parameter>
+<parameter id="cam">
+<default_type>string</default_type>
+<description lang="en_US">The last three letters of the firewire ID of the camera.</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
