@@ -20,19 +20,23 @@ class CameraSelector(object):
     """\
     Camera selector class.
     """
-    def __init__(self, experiment):
+    def __init__(self, experiment, vgmod=False):
         """\
         Constructor.
 
         @param model_file: The YAML file for the model.
         @type model_file: C{str}
+        @param vgmod: Toggle enabling vision graph modification.
+        @type vgmod: C{bool}
         """
         self.experiment = experiment
+        self.vgmod = vgmod
         try:
             self.target = experiment.model.scene['CalibrationPlateFrame']
             #self.robot = experiment.model.scene['robot']
-            self.vision_graph = experiment.model.coverage_hypergraph(\
-                experiment.relevance_models['cell'], K=[2])
+            if vgmod:
+                self.vision_graph = experiment.model.coverage_hypergraph(\
+                    experiment.relevance_models['cell'], K=[2])
         except KeyError:
             raise KeyError('incorrect experiment format')
 
@@ -56,8 +60,11 @@ class CameraSelector(object):
         self.experiment.model.scene['CalibrationPlate'].update_visualization()
         #self.experiment.relevance_models['target'].visualize()
         #self.robot.config = robot_config
-        candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
-            set([current]))
+        if self.vgmod:
+            candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
+                set([current]))
+        else:
+            candidates = dict.fromkeys(self.experiment.model)
         for camera in self.experiment.model:
             if camera in candidates:
                 candidates[camera] = self.experiment.model.performance(\
@@ -99,12 +106,14 @@ if __name__ == '__main__':
         type='float', default=0.0, help='hysteresis threshold')
     parser.add_option('-c', '--conf', dest='conf', default=None,
         help='custom configuration file to load')
+    parser.add_option('-v', '--vision-graph', dest='vg', default=False,
+        action='store_true', help='enable vision graph modification')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
         action='store_true', help='disable camera view and use visual zoom')
     opts, args = parser.parse_args()
     experiment = Experiment(args[0], config_file=opts.conf, zoom=opts.zoom)
     experiment.start()
-    selector = CameraSelector(experiment)
+    selector = CameraSelector(experiment, vgmod=opts.vg)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', opts.port))
     sock.listen(20)
