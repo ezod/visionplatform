@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="343539161">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="546524336">
 <procedure name="stereo_3d_rec_calib">
 <interface>
 <ic>
@@ -17,7 +17,7 @@
 <body>
 <c>* Create a camera setup model and set its parameters</c>
 <c>* TODO: Find out what euler representation halcon is using.</c>
-<c>* The 360 - x where x is the angle comes back to haunt us.</c>
+<c>* The 360 - x, where x is the angle comes back to haunt us.</c>
 <l>for i:= 3 to 5 by 1</l>
 <l>    Pose0[i] := 360 - Pose0[i]</l>
 <l>    Pose1[i] := 360 - Pose1[i]</l>
@@ -35,45 +35,49 @@
 <l>tuple_gen_sequence (0, |X|-1, 1, Indices)</l>
 <l>Ones := gen_tuple_const (|X|, 1)</l>
 <c>*</c>
-<l>AllRow := []</l>
-<l>AllColumn := []</l>
-<l>AllIndices := []</l>
-<l>AllCams := []</l>
-<l>for index:= 0 to 1 by 1</l>
-<l>    get_camera_setup_param (CameraSetupModel, index, 'params', \
-                            CameraParam)</l>
-<l>    read_image (Image, Images[index])</l>
-<l>    find_caltab (Image, Caltab, CaltabDescr, 3, 82, 5)</l>
-<l>    find_marks_and_pose (Image, Caltab, CaltabDescr, CameraParam, 128, \
-                         10, 18, 0.9, 15, 100, Row, Column, Pose)</l>
-<c>    * </c>
-<l>    AllRow := [AllRow, Row]</l>
-<l>    AllColumn := [AllColumn, Column]</l>
-<l>    AllIndices := [AllIndices, Indices]</l>
-<l>    AllCams := [AllCams, index*Ones]</l>
-<l>endfor</l>
-<c>* </c>
-<c>* Reconstruct the 3D points and store them</c>
-<c>* in a 3d object model</c>
-<l>reconstruct_points_stereo (StereoModel, AllRow, AllColumn, [], \
-                           AllCams, AllIndices, X, Y, Z, CovWP, \
-                           PointIndexOut)</l>
-<c>* Performance evaluation</c>
-<l>error:= 0.0</l>
-<l>for i:= 0 to 5 by 1</l>
-<l>    k:= 7*i</l>
-<l>    for j:=0 to 6 by 1</l>
-<l>        p:= [X[j+k], Y[j+k], Z[j+k]]</l>
-<l>        q:= [X[j+k+7], Y[j+k+7], Z[j+k+7]]</l>
-<l>        dis:= sqrt(pow((p[0] - q[0]), 2) + pow((p[1] - q[1]), 2) + \
-                   pow((p[2] - q[2]), 2))</l>
-<c>        * Here the number 12.5 is in millimetres and it corresponds</c>
-<c>        * to the distance between the points in the calibration</c>
-<c>        * plate of 100mm</c>
-<l>        error:= error + abs(dis - 12.5)</l>
-<l>        error:= error / 49</l>
+<l>try</l>
+<l>    AllRow := []</l>
+<l>    AllColumn := []</l>
+<l>    AllIndices := []</l>
+<l>    AllCams := []</l>
+<l>    for index:= 0 to 1 by 1</l>
+<l>        get_camera_setup_param (CameraSetupModel, index, 'params', \
+                                CameraParam)</l>
+<l>        read_image (Image, Images[index])</l>
+<l>        find_caltab (Image, Caltab, CaltabDescr, 3, 82, 5)</l>
+<l>        find_marks_and_pose (Image, Caltab, CaltabDescr, CameraParam, 128, \
+                             10, 18, 0.9, 15, 100, Row, Column, Pose)</l>
+<c>        * </c>
+<l>        AllRow := [AllRow, Row]</l>
+<l>        AllColumn := [AllColumn, Column]</l>
+<l>        AllIndices := [AllIndices, Indices]</l>
+<l>        AllCams := [AllCams, index*Ones]</l>
 <l>    endfor</l>
-<l>endfor</l>
+<c>    * </c>
+<c>    * Reconstruct the 3D points and store them</c>
+<c>    * in a 3d object model</c>
+<l>    reconstruct_points_stereo (StereoModel, AllRow, AllColumn, [], \
+                               AllCams, AllIndices, X, Y, Z, CovWP, \
+                               PointIndexOut)</l>
+<c>    * Performance evaluation</c>
+<l>    error:= 0.0</l>
+<l>    for i:= 0 to 5 by 1</l>
+<l>        k:= 7*i</l>
+<l>        for j:=0 to 6 by 1</l>
+<l>            p:= [X[j+k], Y[j+k], Z[j+k]]</l>
+<l>            q:= [X[j+k+7], Y[j+k+7], Z[j+k+7]]</l>
+<l>            dis:= sqrt(pow((p[0] - q[0]), 2) + pow((p[1] - q[1]), 2) + \
+                       pow((p[2] - q[2]), 2))</l>
+<c>            * Here the number 12.5 is in millimetres and it corresponds</c>
+<c>            * to the distance between the points in the calibration</c>
+<c>            * plate of 100mm</c>
+<l>            error:= error + abs(dis - 12.5)</l>
+<l>            error:= error / 49</l>
+<l>        endfor</l>
+<l>    endfor</l>
+<l>catch(Exception)</l>
+<l>    error:= 'inf'</l>
+<l>endtry</l>
 <l>return ()</l>
 </body>
 <docu id="stereo_3d_rec_calib">
@@ -144,12 +148,13 @@
 </parameter>
 <parameter id="error">
 <default_type>real</default_type>
-<description lang="en_US">The error of the 3D reconstruction, which is based on the relative distance between the reconstructed points.</description>
-<mixed_type>false</mixed_type>
+<description lang="en_US">The error of the 3D reconstruction, which is based on the relative distance between the reconstructed points. If the reconstruction failed, then the function returns 'inf'.</description>
+<mixed_type>optional</mixed_type>
 <multivalue>false</multivalue>
 <sem_type>real</sem_type>
 <type_list>
 <item>real</item>
+<item>string</item>
 </type_list>
 </parameter>
 </parameters>
