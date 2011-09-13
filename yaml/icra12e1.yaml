@@ -1,10 +1,10 @@
 model:
     name:           ICRA 2012 Experiment 1
 
-    res_min_acceptable:     0.9
-    blur_max_acceptable:    10.0
-    angle_max_ideal:        0.2
-    angle_max_acceptable:   1.3
+    res_min_acceptable:     0.5
+    blur_max_acceptable:    3.0
+    angle_max_ideal:        0.8
+    angle_max_acceptable:   1.5
 
     cameras:
         - name:         ABA
@@ -14,7 +14,7 @@ model:
           s:            [0.009293, 0.009300]
           o:            [335.775708, 260.357692]
           dim:          [680, 512]
-          zS:           800.000000
+          zS:           1265.88
           mount:        CameraFrame
           pose:
               T:            [-642.1062210847192, -764.3254563969367, -817.8192903117153]
@@ -27,7 +27,7 @@ model:
           s:            [0.009119, 0.009300]
           o:            [362.493875, 147.240106]
           dim:          [680, 512]
-          zS:           800.000000
+          zS:           848.389
           mount:        CameraFrame
           pose:
               T:            [121.33898857067105, -556.3162919056699, -699.6623959471467]
@@ -40,7 +40,7 @@ model:
           s:            [0.009126, 0.009300]
           o:            [386.525878, 87.345056]
           dim:          [680, 512]
-          zS:           800.000000
+          zS:           855.106
           mount:        CameraFrame
           pose:
               T:            [209.21833615815342, 194.99488730356754, -605.6472663545787]
@@ -53,11 +53,63 @@ model:
           s:            [0.009268, 0.009300]
           o:            [348.782628, 255.860450]
           dim:          [680, 512]
-          zS:           800.000000
+          zS:           951.89
           mount:        CameraFrame
           pose:
               T:            [-606.0241293788869, 15.738009510587943, -963.4096904971505]
               R:            [-0.6087756918024102, [0.12069243556359789, -0.2193921264559694, 0.7527898729265349]]
+              Rformat:      quaternion
+        - name:         X9B
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.671230
+          s:            [0.009268, 0.009300]
+          o:            [348.782628, 255.860450]
+          dim:          [680, 512]
+          zS:           951.89
+          mount:        CameraFrameX
+          pose:
+              T:            [-802.9805695611554, 393.0001340678952, -897.0448670187465]
+              R:            [-0.6748198819133848, [0.06672079657852734, -0.3665634163154526, 0.6370225456928433]]
+              Rformat:      quaternion
+        - name:         XBA
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.804346
+          s:            [0.009293, 0.009300]
+          o:            [335.775708, 260.357692]
+          dim:          [680, 512]
+          zS:           1265.88
+          mount:        CameraFrameX
+          pose:
+              T:            [-878.0306881703243, -295.23632238819937, -1145.5266321545996]
+              R:            [-0.7356074014025201, [0.3266715021735504, -0.25504617694297677, 0.5358347957005125]]
+              Rformat:      quaternion
+        - name:         XB3
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.495995
+          s:            [0.009126, 0.009300]
+          o:            [386.525878, 87.345056]
+          dim:          [680, 512]
+          zS:           855.106
+          mount:        CameraFrameX
+          pose:
+              T:            [-43.2246066, -282.44102100000003, -1004.9182599999999]
+              R:            [-0.7138554350921963, [0.05830794117722314, 0.05014479387267772, 0.6960575416587339]]
+              Rformat:      quaternion
+        - name:         XBB
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            4.476500
+          f:            12.361278
+          s:            [0.009119, 0.009300]
+          o:            [362.493875, 147.240106]
+          dim:          [680, 512]
+          zS:           848.389
+          mount:        CameraFrameX
+          pose:
+              T:            [-138.4963944725755, 112.9457857056554, -1068.4645430283797]
+              R:            [-0.7127115226709765, [-0.018566160363167522, -0.0566212219939967, 0.698921755503617]]
               Rformat:      quaternion
        
     scene:
@@ -67,7 +119,9 @@ model:
               T:            [-978, -455, -553]
               R:            [0, 0, 0]
               Rformat:      'euler-zyx-deg'
-        
+        - name:         robot
+          robot:        robots/mitsubishirv1a.yaml
+          occlusion:    False
         - name:         CameraFrame
           mount:        CameraFrameFrame
           pose:
@@ -79,6 +133,17 @@ model:
               T:            [469.5889, -17.9072, 350.0681]
               R:            [-0.68, [-0.1327, -0.7171, 0.0843]]
               Rformat:      'quaternion'
+        - name:         CameraFrameX
+          mount:        CameraFrameFrameX
+          pose:
+              T:            [0, 0, 0]
+              R:            [180, [1, 0, 0]]
+              Rformat:      'axis-angle-deg'
+        - name:         CameraFrameFrameX
+          pose:
+              T:            [219.1634, 56.6223, 418.0778]
+              R:            [-0.62, [-0.0095, -0.7826, -0.0368]]
+              Rformat:      'quaternion'
         - name:         CalibrationPlate
           sprites:      [scene/calibrationplate.yaml]
           mount:        CalibrationPlateFrame
@@ -87,17 +152,25 @@ model:
               R:            [0, 90, 0]
               Rformat:      'euler-zyx-deg'
         - name:         CalibrationPlateFrame
-         
-
+          mount:        robot
+        - name:         SecondCalibrationPlate
+          sprites:      [scene/calibrationplate.yaml]
+          mount:        SecondCalibrationPlateFrame
+          pose:
+              T:            [0, 0, 0]
+              R:            [0, 90, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         SecondCalibrationPlateFrame
+          mount:        robot
 
 relevance:
     - name:         target
       mount:        CalibrationPlateFrame
       points:
-        - point:        [50, 50, 0, 3.141593, 0]
-        - point:        [50, -50, 0, 3.141593, 0]
-        - point:        [-50, -50, 0, 3.141593, 0]
-        - point:        [-50, 50, 0, 3.141593, 0]
+        - point:        [50, 50, 0, 0, 0]
+        - point:        [50, -50, 0, 0, 0]
+        - point:        [-50, -50, 0, 0, 0]
+        - point:        [-50, 50, 0, 0, 0]
     - name:         cell
       step:         100
       ddiv:         2.0
