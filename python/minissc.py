@@ -8,6 +8,7 @@ Mini SSC II serial servo controller module.
 """
 
 import serial
+from time import sleep
 
 
 class InputError(Exception):
@@ -141,6 +142,34 @@ class ServoController(object):
         """
         return 90 - (self.servos[servo].wh * 0.36)
     
+    def MOV(self, pos_deg, servo):
+        """
+        Move the servo to the desired position in degrees.
+        
+        @param pos_deg: The position in degrees.
+        @type pos_deg: C{float}
+        @param servo: The servo to be moved.
+        @type servo: C{int}
+        """
+        init_pos = self.servos[servo].wh
+        pos = int(round((90 - pos_deg) / 0.36))
+        try:
+            self.servos[servo].update_pos(pos)
+            if init_pos < pos:
+                for step in range(init_pos, pos):
+                    self.port.write(chr(255) + \
+                    chr(self.servos[servo].id) + \
+                    chr(step))
+                    sleep(.01)
+            elif init_pos > pos:
+                for step in range(init_pos, pos, -1):
+                    self.port.write(chr(255) + \
+                    chr(self.servos[servo].id) + \
+                    chr(step))
+                    sleep(.01)
+        except InputError, (instance):
+            print instance.message
+    
     def move(self, pos_deg, servos=None):
         """
         Move the servo or servos to the desired position in degrees.
@@ -150,28 +179,14 @@ class ServoController(object):
         @param servos: The servo or servos to be moved.
         @type servos: C{None, int, list}
         """
-        
-        pos = int(round((90 - pos_deg) / 0.36))
-        try:
-            if servos == None:
-                for servo in range(len(self.servos)):
-                    self.servos[servo].update_pos(pos)
-                    self.port.write(chr(255) + \
-                        chr(self.servos[servo].id) + \
-                        chr(self.servos[servo].wh))
-            elif isinstance(servos, list):
-                for servo in servos:
-                    self.servos[servo].update_pos(pos)
-                    self.port.write(chr(255) + \
-                        chr(self.servos[servo].id) + \
-                        chr(self.servos[servo].wh))
-            elif isinstance(servos, int):
-                self.servos[servos].update_pos(pos)
-                self.port.write(chr(255) + \
-                    chr(self.servos[servos].id) + \
-                    chr(self.servos[servos].wh))
-        except InputError, (instance):
-            print instance.message
+        if servos == None:
+            for servo in range(len(self.servos)):
+                self.MOV(pos_deg, servo)
+        elif isinstance(servos, list):
+            for servo in servos:
+                self.MOV(pos_deg, servo)
+        elif isinstance(servos, int):
+            self.MOV(pos_deg, servos)
     
     def home(self, servos=None):
         """
