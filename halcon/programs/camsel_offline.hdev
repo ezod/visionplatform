@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="590367563">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="753935787">
 <procedure name="main">
 <interface/>
 <body>
@@ -17,29 +17,30 @@
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
 <c></c>
 <c>* Necessary path directories</c>
-<l>internalpar_path := '/home/aaron/school/research/icra12/experiments/e1/calibration/'</l>
+<l>internalpar_path := '/home/aaron/school/research/icra12/experiments/e1/internal/'</l>
 <l>descr_path := '/opt/halcon/calib/'</l>
 <l>image_path := '/home/aaron/school/research/icra12/experiments/e1/images/'</l>
 <l>target_descr:= descr_path+'caltab_100mm.descr'</l>
 <c></c>
 <c>* Open communications with external software</c>
-<l>open_socket_connect('localhost', 5678, ['timeout','protocol'], \
+<l>open_socket_connect('localhost', 5673, ['timeout','protocol'], \
                     ['infinite','TCP'], osock)</l>
 <c>* Initialize camera selection</c>
-<l>cam := 'ABB'</l>
+<l>cam := 'XBA'</l>
 <l>active := 0</l>
-<l>for i := 1 to 104 by 1</l>
+<l>for i := 1 to 103 by 1</l>
 <l>    if(active = 0)</l>
 <l>        read_cam_par(internalpar_path+'internal_'+cam+'.cal', campar)</l>
 <l>        active := 1</l>
 <l>    endif</l>
 <l>    read_image(image, image_path+'img_'+cam+'_'+(i)$'03'+'.tif')</l>
 <l>    dev_display(image)</l>
-<l>    get_pose (image, campar, target_descr, target_mat_string, target_pose)</l>
-<l>    if (target_mat_string = '')</l>
-<l>        continue</l>
-<l>    endif</l>
-<l>    outstring := cam + ',' + target_mat_string</l>
+<l>    *get_pose (image, campar, target_descr, target_mat_string, target_pose)</l>
+<l>    target_mat_string := ''</l>
+<l>    *if (target_mat_string = '')</l>
+<l>    *    continue</l>
+<l>    *endif</l>
+<l>    outstring := cam + ',' + i + ',' + target_mat_string + '#'</l>
 <l>    try</l>
 <l>        send_data(osock, 'z', outstring, [])</l>
 <l>        receive_data(osock, 'z', newcam, from)</l>
