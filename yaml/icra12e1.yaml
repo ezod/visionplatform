@@ -1,10 +1,11 @@
 model:
     name:           ICRA 2012 Experiment 1
 
+    boundary_padding:       150
     res_min_acceptable:     0.5
-    blur_max_acceptable:    3.0
-    angle_max_ideal:        0.8
-    angle_max_acceptable:   1.5
+    blur_max_acceptable:    1.5
+    angle_max_ideal:        0.65
+    angle_max_acceptable:   1.25
 
     cameras:
         - name:         ABA
