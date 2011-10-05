@@ -95,76 +95,160 @@ model:
               Rformat:      euler-zyx-rad
 
     scene:
-        # box D
-        - name:         boxd
-          x:            [0, 90]
-          y:            [0, 170]
+        - name:         boxda
           pose:
               T:            [-132, -117, 0]
-              R:            [0, 0, 0]
-              Rformat:      'euler-zyx-deg'
-        - name:         boxd1
-          x:            [0, 90]
-          y:            [0, 170]
-          z:            140
-          mount:        boxd
-        - name:         boxd2
-          x:            [0, 90]
-          y:            0
-          z:            [0, 140]
-          mount:        boxd
-        - name:         boxd3
-          x:            [0, 90]
-          y:            170
-          z:            [0, 140]
-          mount:        boxd
-        - name:         boxd4
-          x:            0
-          y:            [0, 170]
-          z:            [0, 140]
-          mount:        boxd
-        - name:         boxd5
-          x:            90
-          y:            [0, 170]
-          z:            [0, 140]
-          mount:        boxd
-        # box E
-        - name:         boxe
-          x:            [0, 120]
-          y:            [0, 80]
+              R:            [1, [0, 0, 0]]
+              Rformat:      quaternion
+          vertices:
+            - [0, 0, 0]
+            - [90, 0, 0]
+            - [90, 170, 0]
+        - name:         boxdb
+          mount:        boxda
+          vertices:
+            - [90, 170, 0]
+            - [0, 170, 0]
+            - [0, 0, 0]
+        - name:         boxd1a
+          mount:        boxda
+          vertices:
+            - [0, 0, 140]
+            - [90, 0, 140]
+            - [90, 170, 140]
+        - name:         boxd1b
+          mount:        boxda
+          vertices:
+            - [90, 170, 140]
+            - [0, 170, 140]
+            - [0, 0, 140]
+        - name:         boxd2a
+          mount:        boxda
+          vertices:
+            - [0, 0, 0]
+            - [90, 0, 0]
+            - [90, 0, 140]
+        - name:         boxd2b
+          mount:        boxda
+          vertices:
+            - [90, 0, 140]
+            - [0, 0, 140]
+            - [0, 0, 0]
+        - name:         boxd3a
+          mount:        boxda
+          vertices:
+            - [0, 170, 0]
+            - [90, 170, 0]
+            - [90, 170, 140]
+        - name:         boxd3b
+          mount:        boxda
+          vertices:
+            - [90, 170, 140]
+            - [0, 170, 140]
+            - [0, 170, 0]
+        - name:         boxd4a
+          mount:        boxda
+          vertices:
+            - [0, 0, 0]
+            - [0, 170, 0]
+            - [0, 170, 140]
+        - name:         boxd4b
+          mount:        boxda
+          vertices:
+            - [0, 170, 140]
+            - [0, 0, 140]
+            - [0, 0, 0]
+        - name:         boxd5a
+          mount:        boxda
+          vertices:
+            - [90, 0, 0]
+            - [90, 170, 0]
+            - [90, 170, 140]
+        - name:         boxd5b
+          mount:        boxda
+          vertices:
+            - [90, 170, 140]
+            - [90, 0, 140]
+            - [90, 0, 0]
+        - name:         boxea
           pose:
               T:            [96, -117, 0]
-              R:            [0, 0, 0]
-              Rformat:      euler-zyx-deg
-        - name:         boxe1
-          x:            [0, 120]
-          y:            [0, 80]
-          z:            100
-          mount:        boxe
-        - name:         boxe2
-          x:            [0, 120]
-          y:            0
-          z:            [0, 100]
-          mount:        boxe
-        - name:         boxe3
-          x:            [0, 120]
-          y:            80
-          z:            [0, 100]
-          mount:        boxe
-        - name:         boxe4
-          x:            0
-          y:            [0, 80]
-          z:            [0, 100]
-          mount:        boxe
-        - name:         boxe5
-          x:            120
-          y:            [0, 80]
-          z:            [0, 100]
-          mount:        boxe
+              R:            [1, [0, 0, 0]]
+              Rformat:      quaternion
+          vertices:
+            - [0, 0, 0]
+            - [120, 0, 0]
+            - [120, 80, 0]
+        - name:         boxeb
+          mount:        boxea
+          vertices:
+            - [120, 80, 0]
+            - [0, 80, 0]
+            - [0, 0, 0]
+        - name:         boxe1a
+          mount:        boxea
+          vertices:
+            - [0, 0, 100]
+            - [120, 0, 100]
+            - [120, 80, 100]
+        - name:         boxe1b
+          mount:        boxea
+          vertices:
+            - [120, 80, 100]
+            - [0, 80, 100]
+            - [0, 0, 100]
+        - name:         boxe2a
+          mount:        boxea
+          vertices:
+            - [0, 0, 0]
+            - [120, 0, 0]
+            - [120, 0, 100]
+        - name:         boxe2b
+          mount:        boxea
+          vertices:
+            - [120, 0, 100]
+            - [0, 0, 100]
+            - [0, 0, 0]
+        - name:         boxe3a
+          mount:        boxea
+          vertices:
+            - [0, 80, 0]
+            - [120, 80, 0]
+            - [120, 80, 100]
+        - name:         boxe3b
+          mount:        boxea
+          vertices:
+            - [120, 80, 100]
+            - [0, 80, 100]
+            - [0, 80, 0]
+        - name:         boxe4a
+          mount:        boxea
+          vertices:
+            - [0, 0, 0]
+            - [0, 80, 0]
+            - [0, 80, 100]
+        - name:         boxe4b
+          mount:        boxea
+          vertices:
+            - [0, 80, 100]
+            - [0, 0, 100]
+            - [0, 0, 0]
+        - name:         boxe5a
+          mount:        boxea
+          vertices:
+            - [120, 0, 0]
+            - [120, 80, 0]
+            - [120, 80, 100]
+        - name:         boxe5b
+          mount:        boxea
+          vertices:
+            - [120, 80, 100]
+            - [120, 0, 100]
+            - [120, 0, 0]
 
 relevance:
     - name:         boxdpoints
-      mount:        boxd
+      mount:        boxda
       step:         10
       ddiv:         1
       ranges:
@@ -194,7 +278,7 @@ relevance:
           rho:      1.5707963267948966
           eta:      0
     - name:         boxepoints
-      mount:        boxe
+      mount:        boxea
       step:         10
       ddiv:         1
       ranges:

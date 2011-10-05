@@ -46,15 +46,22 @@ model:
           robot:        robots/mitsubishirv1a.yaml
           mount:        VisionPlatform
           config:       [0.15, -0.16, 90.22, -0.31, -0.14, 0.06, 8.0]
-        - name:         Target
-          x:            [-108, 108]
-          y:            [-140, 140]
-          z:            0
+        - name:         TargetA
           mount:        RV1A
+          vertices:
+            - [-108, -140, 0]
+            - [108, -140, 0]
+            - [108, 140, 0]
+        - name:         TargetB
+          mount:        RV1A
+          vertices:
+            - [108, 140, 0]
+            - [-108, 140, 0]
+            - [-108, -140, 0]
 
 relevance:
     - name:         target
-      mount:        Target
+      mount:        RV1A
       points:
         - point:        [-100, -140, 0, 0, 0]
         - point:        [-100, -100, 0, 0, 0]

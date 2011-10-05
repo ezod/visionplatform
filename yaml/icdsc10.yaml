@@ -88,32 +88,58 @@ model:
               T:            [1850, 435, -640]
               R:            [0, 0, 180]
               Rformat:      euler-zyx-deg
-        - name:         boxtop
-          x:            [-150, 150]
-          y:            [-100, 100]
-          z:            0
-        - name:         boxfront
-          x:            -150
-          y:            [-100, 100]
-          z:            [-100, 0]
-        - name:         boxback
-          x:            150
-          y:            [-100, 100]
-          z:            [-100, 0]
-        - name:         boxleft
-          x:            [-150, 150]
-          y:            -100
-          z:            [-100, 0]
-        - name:         boxright
-          x:            [-150, 150]
-          y:            100
-          z:            [-100, 0]
+        - name:         boxtopa
+          vertices:
+            - [-150, -100, 0]
+            - [150, -100, 0]
+            - [150, 100, 0]
+        - name:         boxtopb
+          vertices:
+            - [150, 100, 0]
+            - [-150, 100, 0]
+            - [-150, -100, 0]
+        - name:         boxfronta
+          vertices:
+            - [-150, -100, -100]
+            - [-150, 100, -100]
+            - [-150, 100, 0]
+        - name:         boxfrontb
+          vertices:
+            - [-150, 100, 0]
+            - [-150, -100, 0]
+            - [-150, -100, -100]
+        - name:         boxbacka
+          vertices:
+            - [150, -100, -100]
+            - [150, 100, -100]
+            - [150, 100, 0]
+        - name:         boxbackb
+          vertices:
+            - [150, 100, 0]
+            - [150, -100, 0]
+            - [150, -100, -100]
+        - name:         boxlefta
+          vertices:
+            - [-150, -100, -100]
+            - [150, -100, -100]
+            - [150, -100, 0]
+        - name:         boxleftb
+          vertices:
+            - [150, -100, 0]
+            - [-150, -100, 0]
+            - [-150, -100, -100]
+        - name:         boxrighta
+          vertices:
+            - [-150, 100, -100]
+            - [150, 100, -100]
+            - [150, 100, 0]
+        - name:         boxrightb
+          vertices:
+            - [150, 100, 0]
+            - [-150, 100, 0]
+            - [-150, 100, -100]
         - name:         Checkerboard
           sprites:      [scene/checkerboard.yaml] 
-          pose:
-              T:            [0, 0, 0]
-              R:            [0, 0, 0]
-              Rformat:      euler-zyx-deg
 
 relevance:
     - name:         main

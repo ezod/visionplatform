@@ -23,14 +23,16 @@ model:
               Rformat:      euler-zyx-deg
     scene:
         # floor
-        - name:         Floor
-          x:            [-800, 800]
-          y:            [-600, 600]
-          z:            0
+        - name:         FloorA
+          vertices:
+            - [-800, -600, 0]
+            - [800, -600, 0]
+            - [800, 600, 0]
+        - name:         FloorB
+          vertices:
+            - [800, 600, 0]
+            - [-800, 600, 0]
+            - [-800, -600, 0]
         - name:         ServoArm
           robot:        robots/pan_tilt_sevos.yaml
           config:       [45.72, 45.72, 0]
-          pose:
-              T:            [0, 0, 0]
-              R:            [0, 0, 0]
-              Rformat:      'euler-zyx-deg'

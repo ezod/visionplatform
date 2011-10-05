@@ -16,7 +16,3 @@ model:
           o:            [760.1805, 495.1859]
           dim:          [1360, 1024]
           zS:           1216.1
-          pose:
-              T:            [0, 0, 0]
-              R:            [0, 0, 0]
-              Rformat:      euler-zyx-deg

@@ -199,17 +199,37 @@ primitives:
       color:        [0.91, 0.85, 0.64]
       material:     wood
 
-planes:
+triangles:
     # top plate
-    - x:            [-1265, 1265]
-      y:            [-430, 430]
+    - vertices:
+        - [-1265, -430, 0]
+        - [1265, -430, 0]
+        - [1265, 430, 0]
       pose:
           T:            [1285, 460, 1775]
+          R:            [1, [0, 0, 0]]
+          Rformat:      quaternion
+    - vertices:
+        - [1265, 430, 0]
+        - [-1265, 430, 0]
+        - [-1265, -430, 0]
+      pose:
+          T:            [1285, 460, 1775]
+          R:            [1, [0, 0, 0]]
+          Rformat:      quaternion
+    # steel plate
+    - vertices:
+        - [-950, -430, 0]
+        - [950, -430, 0]
+        - [950, 430, 0]
+      pose:
+          T:            [1590, 460, 535]
           R:            [0, 0, 0]
           Rformat:      euler-zyx-rad
-    # steel plate
-    - x:            [-950, 950]
-      y:            [-430, 430]
+    - vertices:
+        - [950, 430, 0]
+        - [-950, 430, 0]
+        - [-950, -430, 0]
       pose:
           T:            [1590, 460, 535]
           R:            [0, 0, 0]
