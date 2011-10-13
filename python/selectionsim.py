@@ -58,11 +58,18 @@ if __name__ == '__main__':
     experiment.start()
     if opts.printvals:
         print('Time,' + ('%s,' * 23)[:-1] % tuple([chr(i) for i in range(65,88)]))
-    best = experiment.model.views().pop()
+    best = None
     for t in range(100 * (len(points) - 1)):
         experiment.model[args[2]].set_absolute_pose(Pose(T=f(t / 100.0)))
         experiment.model[args[2]].update_visualization()
+        current = best
         best = best_view(experiment.model, experiment.relevance_models[args[3]],
-            current=best, threshold=opts.threshold,
+            current=current, threshold=opts.threshold,
             time=opts.printvals and t or None)
         experiment.execute('select %s' % set(best).pop())
+        if current != best:
+            try:
+                experiment.execute('fov %s' % set(current).pop())
+            except TypeError:
+                pass
+            experiment.execute('fov %s' % set(best).pop())
