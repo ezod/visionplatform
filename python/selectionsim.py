@@ -34,7 +34,8 @@ def best_view(model, relevance, ocular=1, current=None, threshold=0,
     if time is not None:
         print('%d,' % time + ('%f,' * len(scores))[:-1] % tuple([scores[view] \
             for view in [frozenset([chr(i)]) for i in range(65,88)]]))
-    return sorted(scores.keys(), key=scores.__getitem__)[-1]
+    best = sorted(scores.keys(), key=scores.__getitem__)[-1]
+    return best, scores[best]
 
 
 if __name__ == '__main__':
@@ -43,6 +44,8 @@ if __name__ == '__main__':
         help='custom configuration file to load')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
         type='float', default=0.0, help='hysteresis threshold')
+    parser.add_option('-j', '--jitter', dest='jitter', action='store',
+        type='int', default=0, help='jitter threshold in frames')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
         action='store_true', help='disable camera view and use visual zoom')
     parser.add_option('-p', '--printvals', dest='printvals', default=False,
@@ -60,6 +63,8 @@ if __name__ == '__main__':
     if opts.printvals:
         print('Time,' + ('%s,' * 23)[:-1] % tuple([chr(i) for i in range(65,88)]))
     best = None
+    current_frames = 0
+    performance = 0.0
     for t in range(1, 100 * (len(points) - 1)):
         normal = (f(t / 100.0) - f((t - 1) / 100.0)).normal
         angle = Point((0, -1, 0)).angle(normal)
@@ -68,9 +73,12 @@ if __name__ == '__main__':
         experiment.model[args[2]].set_absolute_pose(Pose(T=f(t / 100.0), R=R))
         experiment.model[args[2]].update_visualization()
         current = best
-        best = best_view(experiment.model, experiment.relevance_models[args[3]],
-            current=current, threshold=opts.threshold,
-            time=opts.printvals and t or None)
+        best, score = best_view(experiment.model,
+            experiment.relevance_models[args[3]], current=current,
+            threshold=opts.threshold, time=opts.printvals and t or None)
+        current_frames += 1
+        if current_frames > opts.jitter:
+            performance += score - (current == best and opts.threshold or 0.0)
         if current != best:
             experiment.execute('select %s' % set(best).pop())
             experiment.altdisplays[0].camera_view(experiment.model[set(best).pop()])
@@ -79,3 +87,5 @@ if __name__ == '__main__':
             except TypeError:
                 pass
             experiment.execute('fov %s' % set(best).pop())
+            current_frames = 0
+    print('Performance: %f' % (100 * performance / t))
