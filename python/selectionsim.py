@@ -11,7 +11,7 @@ import numpy
 from scipy.interpolate import interp1d
 from optparse import OptionParser
 
-from adolphus import Pose, Point, Experiment
+from adolphus import Pose, Point, Rotation, Experiment
 
 
 def interpolate_points(points):
@@ -53,21 +53,27 @@ if __name__ == '__main__':
         points.append(Point([float(s) for s in line.rstrip().split(',')]))
     f = interpolate_points(points)
     experiment = Experiment(zoom=opts.zoom)
+    experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
     experiment.execute('loadconfig %s' % opts.conf)
     experiment.start()
     if opts.printvals:
         print('Time,' + ('%s,' * 23)[:-1] % tuple([chr(i) for i in range(65,88)]))
     best = None
-    for t in range(100 * (len(points) - 1)):
-        experiment.model[args[2]].set_absolute_pose(Pose(T=f(t / 100.0)))
+    for t in range(1, 100 * (len(points) - 1)):
+        normal = (f(t / 100.0) - f((t - 1) / 100.0)).normal
+        angle = Point((0, -1, 0)).angle(normal)
+        axis = Point((0, -1, 0)) ** normal
+        R = Rotation.from_axis_angle(angle, axis)
+        experiment.model[args[2]].set_absolute_pose(Pose(T=f(t / 100.0), R=R))
         experiment.model[args[2]].update_visualization()
         current = best
         best = best_view(experiment.model, experiment.relevance_models[args[3]],
             current=current, threshold=opts.threshold,
             time=opts.printvals and t or None)
-        experiment.execute('select %s' % set(best).pop())
         if current != best:
+            experiment.execute('select %s' % set(best).pop())
+            experiment.altdisplays[0].camera_view(experiment.model[set(best).pop()])
             try:
                 experiment.execute('fov %s' % set(current).pop())
             except TypeError:
