@@ -68,7 +68,11 @@ if __name__ == '__main__':
     best = None
     current_frames = 0
     performance = 0.0
+    if opts.visualize:
+        experiment.event.wait()
     for t in range(1, 100 * (len(points) - 1)):
+        if experiment.exit:
+            break
         normal = (f(t / 100.0) - f((t - 1) / 100.0)).normal
         angle = Point((0, -1, 0)).angle(normal)
         axis = Point((0, -1, 0)) ** normal
