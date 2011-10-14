@@ -46,6 +46,8 @@ if __name__ == '__main__':
         type='float', default=0.0, help='hysteresis threshold')
     parser.add_option('-j', '--jitter', dest='jitter', action='store',
         type='int', default=0, help='jitter threshold in frames')
+    parser.add_option('-v', '--visualize', dest='visualize', default=False,
+        action='store_true', help='enable visualization')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
         action='store_true', help='disable camera view and use visual zoom')
     parser.add_option('-p', '--printvals', dest='printvals', default=False,
@@ -59,7 +61,8 @@ if __name__ == '__main__':
     experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
     experiment.execute('loadconfig %s' % opts.conf)
-    experiment.start()
+    if opts.visualize:
+        experiment.start()
     if opts.printvals:
         print('Time,' + ('%s,' * 23)[:-1] % tuple([chr(i) for i in range(65,88)]))
     best = None
@@ -71,21 +74,24 @@ if __name__ == '__main__':
         axis = Point((0, -1, 0)) ** normal
         R = Rotation.from_axis_angle(angle, axis)
         experiment.model[args[2]].set_absolute_pose(Pose(T=f(t / 100.0), R=R))
-        experiment.model[args[2]].update_visualization()
+        if opts.visualize:
+            experiment.model[args[2]].update_visualization()
         current = best
-        best, score = best_view(experiment.model,
-            experiment.relevance_models[args[3]], current=current,
+        best, score = best_view(experiment.model, experiment.relevance_models[\
+            args[3]], current=(current and frozenset([current]) or None),
             threshold=opts.threshold, time=opts.printvals and t or None)
+        best = set(best).pop()
         current_frames += 1
         if current_frames > opts.jitter:
             performance += score - (current == best and opts.threshold or 0.0)
         if current != best:
-            experiment.execute('select %s' % set(best).pop())
-            experiment.altdisplays[0].camera_view(experiment.model[set(best).pop()])
-            try:
-                experiment.execute('fov %s' % set(current).pop())
-            except TypeError:
-                pass
-            experiment.execute('fov %s' % set(best).pop())
+            if opts.visualize:
+                experiment.execute('select %s' % best)
+                experiment.altdisplays[0].camera_view(experiment.model[best])
+                try:
+                    experiment.execute('fov %s' % current)
+                except:
+                    pass
+                experiment.execute('fov %s' % best)
             current_frames = 0
     print('Performance: %f' % (100 * performance / t))
