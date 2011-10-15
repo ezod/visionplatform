@@ -121,4 +121,5 @@ if __name__ == '__main__':
                     pass
                 experiment.execute('fov %s' % best)
             current_frames = 0
-    print('Performance: %f' % (100 * performance / t))
+    if not opts.printvals:
+        print('Performance: %f' % (100 * performance / t))
