@@ -7,9 +7,15 @@ Camera selection simulation.
 @license: GPL-3
 """
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 import numpy
 from scipy.interpolate import interp1d
 from optparse import OptionParser
+import os.path
 
 from adolphus import Pose, Point, Rotation, Experiment
 
@@ -52,6 +58,8 @@ if __name__ == '__main__':
         action='store_true', help='disable camera view and use visual zoom')
     parser.add_option('-p', '--printvals', dest='printvals', default=False,
         action='store_true', help='print coverage values')
+    parser.add_option('-g', '--graph', dest='graph', action='store',
+        default=None, help='pickle of vision graph')
     opts, args = parser.parse_args()
     points = []
     for line in open(args[1], 'r'):
@@ -61,11 +69,22 @@ if __name__ == '__main__':
     experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
     experiment.execute('loadconfig %s' % opts.conf)
+    if opts.graph and os.path.exists(opts.graph):
+        vision_graph = pickle.load(open(opts.graph, 'r'))
+    else:
+        try:
+            vision_graph = experiment.model.coverage_hypergraph(\
+                experiment.relevance_models[args[4]], K=2)
+            pickle.dump(vision_graph, open(opts.graph, 'w'))
+        except IndexError:
+            vision_graph = None
     if opts.visualize:
         experiment.start()
     if opts.printvals:
-        print('Time,' + ('%s,' * 23)[:-1] % tuple([chr(i) for i in range(65,88)]))
+        print('Time,' + ('%s,' * 23)[:-1] % \
+            tuple([chr(i) for i in range(65,88)]))
     best = None
+    score = 0.0
     current_frames = 0
     performance = 0.0
     if opts.visualize:
@@ -83,7 +102,9 @@ if __name__ == '__main__':
         current = best
         best, score = best_view(experiment.model, experiment.relevance_models[\
             args[3]], current=(current and frozenset([current]) or None),
-            threshold=opts.threshold, time=opts.printvals and t or None)
+            threshold=opts.threshold, candidates=((vision_graph and score) \
+            and [frozenset(c) for c in vision_graph.neighbors(current) | \
+            set([current])] or None), time=(opts.printvals and t or None))
         best = set(best).pop()
         current_frames += 1
         if current_frames > opts.jitter:
