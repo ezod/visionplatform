@@ -69,7 +69,9 @@ if __name__ == '__main__':
     experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
     experiment.execute('loadconfig %s' % opts.conf)
-    if opts.graph and os.path.exists(opts.graph):
+    if opts.printvals:
+        vision_graph = None
+    elif opts.graph and os.path.exists(opts.graph):
         vision_graph = pickle.load(open(opts.graph, 'r'))
     else:
         try:
