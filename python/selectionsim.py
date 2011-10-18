@@ -16,6 +16,7 @@ import numpy
 from scipy.interpolate import interp1d
 from optparse import OptionParser
 import os.path
+from random import uniform
 
 from adolphus import Pose, Point, Rotation, Experiment
 
@@ -25,6 +26,23 @@ def interpolate_points(points):
     tm = [float(i) for i in range(len(points))]
     f = [interp1d(tm, p, kind='cubic') for p in split]
     return lambda t: Point([f[i](t) for i in range(3)])
+
+
+def random_pose_error(pose, terror, rerror):
+    T, R = pose.T, pose.R
+    # position error
+    while True:
+        rv = Point((uniform(-1, 1), uniform(-1, 1), uniform(-1, 1)))
+        if rv.magnitude < 1:
+            break
+    T += terror * rv.normal
+    # rotation error
+    while True:
+        rv = Point((uniform(-1, 1), uniform(-1, 1), 0))
+        if rv.magnitude < 1:
+            break
+    R = Rotation.from_axis_angle(rerror, rv.normal) + R
+    return Pose(T=T, R=R)
 
 
 def best_view(model, relevance, ocular=1, current=None, threshold=0,
