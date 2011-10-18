@@ -46,7 +46,7 @@ def random_pose_error(pose, terror, rerror):
 
 
 def best_view(model, relevance, ocular=1, current=None, threshold=0,
-              candidates=None, time=None):
+              candidates=None):
     if candidates:
         scores = dict.fromkeys(candidates)
     else:
@@ -55,9 +55,6 @@ def best_view(model, relevance, ocular=1, current=None, threshold=0,
         scores[view] = model.performance(relevance, subset=view)
     if current:
         scores[current] += threshold
-    if time is not None:
-        print('%d,' % time + ('%f,' * len(scores))[:-1] % tuple([scores[view] \
-            for view in [frozenset([chr(i)]) for i in range(65,88)]]))
     best = sorted(scores.keys(), key=scores.__getitem__)[-1]
     return best, scores[best]
 
@@ -74,8 +71,6 @@ if __name__ == '__main__':
         action='store_true', help='enable visualization')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
         action='store_true', help='disable camera view and use visual zoom')
-    parser.add_option('-p', '--printvals', dest='printvals', default=False,
-        action='store_true', help='print coverage values')
     parser.add_option('-g', '--graph', dest='graph', action='store',
         default=None, help='pickle of vision graph')
     opts, args = parser.parse_args()
@@ -87,9 +82,7 @@ if __name__ == '__main__':
     experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
     experiment.execute('loadconfig %s' % opts.conf)
-    if opts.printvals:
-        vision_graph = None
-    elif opts.graph and os.path.exists(opts.graph):
+    if opts.graph and os.path.exists(opts.graph):
         vision_graph = pickle.load(open(opts.graph, 'r'))
     else:
         try:
@@ -100,9 +93,6 @@ if __name__ == '__main__':
             vision_graph = None
     if opts.visualize:
         experiment.start()
-    if opts.printvals:
-        print('Time,' + ('%s,' * 23)[:-1] % \
-            tuple([chr(i) for i in range(65,88)]))
     best = None
     score = 0.0
     current_frames = 0
@@ -124,7 +114,7 @@ if __name__ == '__main__':
             args[3]], current=(current and frozenset([current]) or None),
             threshold=opts.threshold, candidates=((vision_graph and score) \
             and [frozenset(c) for c in vision_graph.neighbors(current) | \
-            set([current])] or None), time=(opts.printvals and t or None))
+            set([current])] or None))
         best = set(best).pop()
         current_frames += 1
         if current_frames > opts.jitter:
@@ -139,5 +129,5 @@ if __name__ == '__main__':
                     pass
                 experiment.execute('fov %s' % best)
             current_frames = 0
-    if not opts.printvals:
-        print('Performance: %f' % (100 * performance / t))
+    print('Performance (J = %d, T = %g): %f' % (opts.jitter, opts.threshold,
+        (100 * performance / t)))
