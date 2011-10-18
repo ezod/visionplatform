@@ -29,15 +29,17 @@ def interpolate_points(points):
 
 def create_error_model(model, terror, rerror):
     emodel = A.Model(task_params=model._task_params)
+    convert = {}
     for camera in set(model.cameras):
         emodel[camera] = A.Camera(camera, model[camera]._params,
             pose=model[camera]._pose, mount=model[camera].mount)
         emodel[camera].set_absolute_pose(\
             A.random_pose_error(model[camera].pose, terror, rerror))
+        convert[camera] = -model[camera].pose + emodel[camera].pose
     for sceneobj in model.keys():
         if not sceneobj in model.cameras:
             emodel[sceneobj] = model[sceneobj]
-    return emodel
+    return emodel, convert
 
 
 def best_view(model, relevance, ocular=1, current=None, threshold=0,
@@ -48,9 +50,11 @@ def best_view(model, relevance, ocular=1, current=None, threshold=0,
         scores = dict.fromkeys(model.views(ocular=ocular))
     for view in scores:
         scores[view] = model.performance(relevance, subset=view)
-    if current:
+    if current and scores[current]:
         scores[current] += threshold
     best = sorted(scores.keys(), key=scores.__getitem__)[-1]
+    if current and not scores[best]:
+        return current, 0.0
     return best, scores[best] - (best == current and threshold or 0)
 
 
@@ -72,6 +76,8 @@ if __name__ == '__main__':
         nargs=2, type='float', default=None, help='camera calibration error')
     parser.add_option('-T', '--target-error', dest='terror', action='store',
         nargs=2, type='float', default=None, help='target pose error')
+    parser.add_option('-p', '--pose-tracking', dest='posetrack', default=False,
+        action='store_true', help='target poses are obtained from cameras')
     opts, args = parser.parse_args()
     points = []
     for line in open(args[1], 'r'):
@@ -91,11 +97,11 @@ if __name__ == '__main__':
         except IndexError:
             vision_graph = None
     if opts.cerror:
-        emodel = create_error_model(experiment.model, opts.cerror[0],
+        emodel, convert = create_error_model(experiment.model, opts.cerror[0],
             opts.cerror[1])
     else:
         emodel = None
-    if opts.terror:
+    if opts.terror or (opts.posetrack and emodel):
         etarget = A.RelevanceModel(experiment.relevance_models[args[3]].original)
     else:
         etarget = None
@@ -119,9 +125,13 @@ if __name__ == '__main__':
         if opts.visualize:
             experiment.model[args[2]].update_visualization()
         current = best
-        if etarget:
+        if opts.terror:
             etarget.set_absolute_pose(A.random_pose_error(experiment.\
                 relevance_models[args[3]].pose, opts.terror[0], opts.terror[1]))
+        elif opts.posetrack and emodel:
+            etarget.set_absolute_pose(experiment.relevance_models[args[3]].pose)
+        if current and score and opts.posetrack and emodel:
+            etarget.set_absolute_pose(etarget.pose + convert[current])
         best, score = best_view(emodel or experiment.model, etarget or \
             experiment.relevance_models[args[3]], current=(current and \
             frozenset([current]) or None), threshold=opts.threshold,
