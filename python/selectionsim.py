@@ -45,22 +45,6 @@ def create_error_model(model, poses=None, terror=0.0, rerror=0.0):
     return emodel, convert
 
 
-def best_view(model, relevance, ocular=1, current=None, threshold=0,
-              candidates=None):
-    if candidates:
-        scores = dict.fromkeys(candidates)
-    else:
-        scores = dict.fromkeys(model.views(ocular=ocular))
-    for view in scores:
-        scores[view] = model.performance(relevance, subset=view)
-    if current and scores[current]:
-        scores[current] += threshold
-    best = max(scores.keys(), key=scores.__getitem__)
-    if current and not scores[best]:
-        return current, 0.0
-    return best, scores[best] - (best == current and threshold or 0)
-
-
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-c', '--conf', dest='conf', default=None,
@@ -145,7 +129,7 @@ if __name__ == '__main__':
             etarget.set_absolute_pose(experiment.relevance_models[args[3]].pose)
         if current and score and opts.posetrack and emodel:
             etarget.set_absolute_pose(etarget.pose + convert[current])
-        best, score = best_view(emodel or experiment.model, etarget or \
+        best, score = (emodel or experiment.model).best_view(etarget or \
             experiment.relevance_models[args[3]], current=(current and \
             frozenset([current]) or None), threshold=opts.threshold,
             candidates=((vision_graph and score) and [frozenset(c) for c in \
