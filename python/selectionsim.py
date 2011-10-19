@@ -55,7 +55,7 @@ def best_view(model, relevance, ocular=1, current=None, threshold=0,
         scores[view] = model.performance(relevance, subset=view)
     if current and scores[current]:
         scores[current] += threshold
-    best = sorted(scores.keys(), key=scores.__getitem__)[-1]
+    best = max(scores.keys(), key=scores.__getitem__)
     if current and not scores[best]:
         return current, 0.0
     return best, scores[best] - (best == current and threshold or 0)
