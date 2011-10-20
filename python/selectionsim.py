@@ -107,12 +107,15 @@ if __name__ == '__main__':
     best = None
     score = 0.0
     current_frames = 0
-    performance = 0.0
+    perf = 0.0
+    perf_delta = 0.0
+    optperf = 0.0
     if opts.visualize:
         experiment.event.wait()
     for t in range(1, 100 * (len(points) - 1)):
         if experiment.exit:
             break
+        current_frames += 1
         normal = (f(t / 100.0) - f((t - 1) / 100.0)).normal
         angle = A.Point((0, -1, 0)).angle(normal)
         axis = A.Point((0, -1, 0)) ** normal
@@ -134,13 +137,13 @@ if __name__ == '__main__':
             frozenset([current]) or None), threshold=opts.threshold,
             candidates=((vision_graph and score) and [frozenset(c) for c in \
             vision_graph.neighbors(current) | set([current])] or None))
+        perf_delta += score
+        optperf += experiment.model.best_view(\
+            experiment.relevance_models[args[3]])[1]
         if emodel or etarget:
             score = experiment.model.performance(\
                 experiment.relevance_models[args[3]], subset=best)
         best = set(best).pop()
-        current_frames += 1
-        if current_frames > opts.jitter:
-            performance += score
         if current != best:
             if opts.visualize:
                 experiment.execute('select %s' % best)
@@ -150,6 +153,10 @@ if __name__ == '__main__':
                 except:
                     pass
                 experiment.execute('fov %s' % best)
+            if current_frames > opts.jitter:
+                perf += perf_delta
             current_frames = 0
+            perf_delta = 0.0
+    perf += perf_delta
     print('Performance (j = %d, t = %g, C = %s, T = %s): %f' % (opts.jitter,
-        opts.threshold, opts.cerror, opts.terror, (100 * performance / t)))
+        opts.threshold, opts.cerror, opts.terror, (100 * perf / optperf)))
