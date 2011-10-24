@@ -16,6 +16,7 @@ import numpy
 from scipy.interpolate import interp1d
 from optparse import OptionParser
 import os.path
+import sys
 
 import adolphus as A
 
@@ -49,6 +50,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-c', '--conf', dest='conf', default=None,
         help='custom configuration file to load')
+    parser.add_option('-i', '--interpolate', dest='interpolate',
+        action='store', type='int', default=100, help='interpolation pitch')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
         type='float', default=0.0, help='hysteresis threshold')
     parser.add_option('-j', '--jitter', dest='jitter', action='store',
@@ -72,6 +75,13 @@ if __name__ == '__main__':
     for line in open(args[1], 'r'):
         points.append(A.Point([float(s) for s in line.rstrip().split(',')]))
     f = interpolate_points(points)
+    try:
+        optperf = float(open(args[1] + '.%d.opt' % opts.interpolate,
+            'r').readline())
+        optcached = True
+    except IOError:
+        optperf = 0.0
+        optcached = False
     experiment = A.Experiment(zoom=opts.zoom)
     experiment.add_display()
     experiment.execute('loadmodel %s' % args[0])
@@ -109,19 +119,19 @@ if __name__ == '__main__':
     current_frames = 0
     perf = 0.0
     perf_delta = 0.0
-    optperf = 0.0
     if opts.visualize:
         experiment.event.wait()
-    for t in range(1, 100 * (len(points) - 1)):
+    for t in range(1, opts.interpolate * (len(points) - 1)):
         if experiment.exit:
             break
         current_frames += 1
-        normal = (f(t / 100.0) - f((t - 1) / 100.0)).normal
+        normal = (f(t / float(opts.interpolate)) - \
+            f((t - 1) / float(opts.interpolate))).normal
         angle = A.Point((0, -1, 0)).angle(normal)
         axis = A.Point((0, -1, 0)) ** normal
         R = A.Rotation.from_axis_angle(angle, axis)
         experiment.model[args[2]].set_absolute_pose(\
-            A.Pose(T=f(t / 100.0), R=R))
+            A.Pose(T=f(t / float(opts.interpolate)), R=R))
         if opts.visualize:
             experiment.model[args[2]].update_visualization()
         current = best
@@ -140,8 +150,9 @@ if __name__ == '__main__':
         if emodel or etarget:
             score = experiment.model.performance(\
                 experiment.relevance_models[args[3]], subset=best)
-        optperf += experiment.model.best_view(\
-            experiment.relevance_models[args[3]])[1]
+        if not optcached:
+            optperf += experiment.model.best_view(\
+                experiment.relevance_models[args[3]])[1]
         best = set(best).pop()
         if current != best:
             if opts.visualize:
@@ -160,3 +171,6 @@ if __name__ == '__main__':
     perf += perf_delta
     print('Performance (j = %d, t = %g, C = %s, T = %s): %f' % (opts.jitter,
         opts.threshold, opts.cerror, opts.terror, (100 * perf / optperf)))
+    sys.stdout.flush()
+    if not optcached:
+        open(args[1] + '.%d.opt' % opts.interpolate, 'w').write('%f' % optperf)
