@@ -71,21 +71,25 @@ if __name__ == '__main__':
     parser.add_option('-p', '--pose-tracking', dest='posetrack', default=False,
         action='store_true', help='target poses are obtained from cameras')
     opts, args = parser.parse_args()
+    modelfile, pathfile, targetobj, targetrm = args[:4]
+    # load path waypoints
     points = []
-    for line in open(args[1], 'r'):
+    for line in open(pathfile, 'r'):
         points.append(A.Point([float(s) for s in line.rstrip().split(',')]))
     f = interpolate_points(points)
     try:
-        optperf = float(open(args[1] + '.%d.opt' % opts.interpolate,
+        optperf = float(open(pathfile + '.%d.opt' % opts.interpolate,
             'r').readline())
         optcached = True
     except IOError:
         optperf = 0.0
         optcached = False
+    # load model
     experiment = A.Experiment(zoom=opts.zoom)
     experiment.add_display()
-    experiment.execute('loadmodel %s' % args[0])
+    experiment.execute('loadmodel %s' % modelfile)
     experiment.execute('loadconfig %s' % opts.conf)
+    # compute vision graph
     if opts.graph and os.path.exists(opts.graph):
         vision_graph = pickle.load(open(opts.graph, 'r'))
     else:
@@ -95,6 +99,7 @@ if __name__ == '__main__':
             pickle.dump(vision_graph, open(opts.graph, 'w'))
         except IndexError:
             vision_graph = None
+    # build camera error model
     if opts.cerror:
         emodel, convert = create_error_model(experiment.model,
             terror=opts.cerror[0], rerror=opts.cerror[1])
@@ -108,10 +113,12 @@ if __name__ == '__main__':
         emodel, convert = create_error_model(experiment.model, poses=poses)
     else:
         emodel = None
+    # set up target error model
     if opts.terror or (opts.posetrack and emodel):
-        etarget = A.RelevanceModel(experiment.relevance_models[args[3]].original)
+        etarget = A.RelevanceModel(experiment.relevance_models[targetrm].original)
     else:
         etarget = None
+    # start
     if opts.visualize:
         experiment.start()
     best = None
@@ -130,29 +137,29 @@ if __name__ == '__main__':
         angle = A.Point((0, -1, 0)).angle(normal)
         axis = A.Point((0, -1, 0)) ** normal
         R = A.Rotation.from_axis_angle(angle, axis)
-        experiment.model[args[2]].set_absolute_pose(\
+        experiment.model[targetobj].set_absolute_pose(\
             A.Pose(T=f(t / float(opts.interpolate)), R=R))
         if opts.visualize:
-            experiment.model[args[2]].update_visualization()
+            experiment.model[targetobj].update_visualization()
         current = best
         if opts.terror:
             etarget.set_absolute_pose(A.random_pose_error(experiment.\
-                relevance_models[args[3]].pose, opts.terror[0], opts.terror[1]))
+                relevance_models[targetrm].pose, opts.terror[0], opts.terror[1]))
         elif opts.posetrack and emodel:
-            etarget.set_absolute_pose(experiment.relevance_models[args[3]].pose)
+            etarget.set_absolute_pose(experiment.relevance_models[targetrm].pose)
         if current and score and opts.posetrack and emodel:
             etarget.set_absolute_pose(etarget.pose + convert[current])
         best, score = (emodel or experiment.model).best_view(etarget or \
-            experiment.relevance_models[args[3]], current=(current and \
+            experiment.relevance_models[targetrm], current=(current and \
             frozenset([current]) or None), threshold=opts.threshold,
             candidates=((vision_graph and score) and [frozenset(c) for c in \
             vision_graph.neighbors(current) | set([current])] or None))
         if emodel or etarget:
             score = experiment.model.performance(\
-                experiment.relevance_models[args[3]], subset=best)
+                experiment.relevance_models[targetrm], subset=best)
         if not optcached:
             optperf += experiment.model.best_view(\
-                experiment.relevance_models[args[3]])[1]
+                experiment.relevance_models[targetrm])[1]
         best = set(best).pop()
         if current != best:
             if opts.visualize:
@@ -173,4 +180,4 @@ if __name__ == '__main__':
         opts.threshold, opts.cerror, opts.terror, (100 * perf / optperf)))
     sys.stdout.flush()
     if not optcached:
-        open(args[1] + '.%d.opt' % opts.interpolate, 'w').write('%f' % optperf)
+        open(pathfile + '.%d.opt' % opts.interpolate, 'w').write('%f' % optperf)
