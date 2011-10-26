@@ -7,76 +7,22 @@ Camera selection application.
 @license: GPL-3
 """
 
-import socket
-#import serial
-from optparse import OptionParser
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
-from adolphus import Experiment
+import socket
+import serial
+import os.path
+from optparse import OptionParser
+from math import pi
+
+import adolphus as A
 
 from halconparser import parse_pose_string
-
-
-class CameraSelector(object):
-    """\
-    Camera selector class.
-    """
-    def __init__(self, experiment, vgmod=False):
-        """\
-        Constructor.
-
-        @param model_file: The YAML file for the model.
-        @type model_file: C{str}
-        @param vgmod: Toggle enabling vision graph modification.
-        @type vgmod: C{bool}
-        """
-        self.experiment = experiment
-        self.vgmod = vgmod
-        try:
-            self.target = experiment.model.scene['CalibrationPlateFrame']
-            #self.robot = experiment.model.scene['robot']
-            if vgmod:
-                self.vision_graph = experiment.model.coverage_hypergraph(\
-                    experiment.relevance_models['cell'], K=[2])
-        except KeyError:
-            raise KeyError('incorrect experiment format')
-
-    def best_view(self, current, target_pose, robot_config, threshold=0.0):
-        """\
-        TODO
-
-        @param current: The current active camera ID.
-        @type current: C{str}
-        @param target_pose: The current pose of the target.
-        @type target_pose: L{Pose}
-        @param robot_config: The current state of the robotic arm.
-        @type robot_config: C{list} of C{float}
-        @param threshold: Hysteresis threshold.
-        @type threshold: C{float}
-        @return: The next camera to make active.
-        @rtype: C{str}
-        """
-        self.target.set_relative_pose(target_pose)
-        self.target.mount = self.experiment.model[current]
-        self.experiment.model.scene['CalibrationPlate'].update_visualization()
-        #self.experiment.relevance_models['target'].visualize()
-        #self.robot.config = robot_config
-        if self.vgmod:
-            candidates = dict.fromkeys(self.vision_graph.neighbors(current) | \
-                set([current]))
-        else:
-            candidates = dict.fromkeys(self.experiment.model)
-        for camera in self.experiment.model:
-            if camera in candidates:
-                candidates[camera] = self.experiment.model.performance(\
-                    self.experiment.relevance_models['target'], subset=[camera])
-                self.experiment.execute('showval %s %s' % (camera,
-                    candidates[camera]))
-            else:
-                self.experiment.execute('showval %s' % camera)
-        candidates[current] += threshold
-        best = sorted(candidates.keys(), key=candidates.__getitem__)[-1]
-        self.experiment.execute('indicate %s' % best)
-        return best
+from melfaparser import parse_positions
+from robotjpos import query_position
 
 
 def parse_from_halcon(hstring):
@@ -92,8 +38,12 @@ def parse_from_halcon(hstring):
     """
     hstring = hstring.split(',')
     camera = hstring.pop(0)
-    pose = parse_pose_string(','.join(hstring))
-    return camera, pose
+    pnum = int(hstring.pop(0))
+    try:
+        pose = A.Pose(R=A.Rotation.from_axis_angle(pi, A.Point((1, 0, 0)))) + parse_pose_string(','.join(hstring))
+    except:
+        pose = None
+    return camera, pnum, pose
 
 
 if __name__ == '__main__':
@@ -101,42 +51,88 @@ if __name__ == '__main__':
     parser.add_option('-p', '--port', dest='port', action='store',
         type='int', default=5678, help='network port to listen on')
     parser.add_option('-s', '--serialport', dest='serialport', action='store',
-        default='COM1', help='serial port for robot')
+        default=None, help='serial port for robot')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
         type='float', default=0.0, help='hysteresis threshold')
     parser.add_option('-c', '--conf', dest='conf', default=None,
         help='custom configuration file to load')
-    parser.add_option('-v', '--vision-graph', dest='vg', default=False,
-        action='store_true', help='enable vision graph modification')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
         action='store_true', help='disable camera view and use visual zoom')
+    parser.add_option('-g', '--graph', dest='graph', action='store',
+        default=None, help='pickle of vision graph')
+    parser.add_option('-r', '--robotpath', dest='robotpath', action='store',
+        default=None, help='robot positions file')
     opts, args = parser.parse_args()
-    experiment = Experiment(args[0], config_file=opts.conf, zoom=opts.zoom)
-    experiment.start()
-    selector = CameraSelector(experiment, vgmod=opts.vg)
+    modelfile, targetobj, targetrm = args[:3]
+    # load model
+    experiment = A.Experiment(zoom=opts.zoom)
+    #experiment.add_display()
+    experiment.execute('loadmodel %s' % modelfile)
+    experiment.execute('loadconfig %s' % opts.conf)
+    # compute vision graph
+    if opts.graph and os.path.exists(opts.graph):
+        vision_graph = pickle.load(open(opts.graph, 'r'))
+    else:
+        try:
+            vision_graph = experiment.model.coverage_hypergraph(\
+                experiment.relevance_models[args[3]], K=2)
+        except IndexError:
+            vision_graph = None
+        if opts.graph:
+            pickle.dump(vision_graph, open(opts.graph, 'w'))
+    # set up network socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', opts.port))
     sock.listen(20)
-    #port = serial.Serial(port=opts.serialport, baudrate=19200)
-    experiment.display.message('Ready.')
+    # set up serial communication
+    if opts.serialport:
+        port = serial.Serial(port=opts.serialport, baudrate=19200)
+    else:
+        port = None
+    # load robot positions
+    if opts.robotpath:
+        positions = parse_positions(opts.robotpath)
+    else:
+        positions = None
+    # start
+    best = None
+    score = 0.0
+    experiment.start()
     channel, details = sock.accept()
     try:
         while True:
+            current = best
             hstring = ''
-            while True:
+            while not hstring.endswith('#'):
                 hstring += channel.recv(65536)
-                try:
-                    camera, pose = parse_from_halcon(hstring)
-                    break
-                except ValueError:
-                    continue
-            # TODO: get robot config
-            #port.write('PRNS\r')
-            config = []
-            bestview = selector.best_view(camera, pose, config, opts.threshold)
-            channel.sendall(bestview)
+            camera, pnum, pose = parse_from_halcon(hstring.strip('#'))
+            if pose:
+                pose = experiment.model[camera].pose + pose # TODO: check order and signs
+                experiment.model[targetobj].set_absolute_pose(pose)
+            elif port:
+                experiment.model[targetobj].config = \
+                    query_position(port) + [8.0]
+            elif positions:
+                experiment.model[targetobj].config = \
+                    positions['J%d' % pnum] + [8.0]
+            experiment.model[targetobj].update_visualization()
+            best, score = experiment.model.best_view(\
+                experiment.relevance_models[targetrm], threshold=opts.threshold,
+                current=frozenset([camera]),
+                candidates=((vision_graph and score) and [frozenset(c) for c \
+                in vision_graph.neighbors(current) | set([current])] or None))
+            best = set(best).pop()
+            experiment.execute('select %s' % best)
+            #experiment.altdisplays[0].camera_view(experiment.model[best])
+            try:
+                experiment.execute('fov %s' % current)
+            except:
+                pass
+            experiment.execute('fov %s' % best)
+            channel.sendall(best)
     finally:
-        #port.close()
+        if port:
+            port.close()
         channel.close()
         sock.close()
         experiment.execute('exit')
