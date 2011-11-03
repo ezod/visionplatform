@@ -153,9 +153,12 @@ if __name__ == '__main__':
     finally:
         if current_frames > opts.jitter:
             perf += perf_delta
-        print('Performance (j = %d, t = %g): %f' % (opts.jitter, opts.threshold,
-            (100 * perf / optperf)))
-        sys.stdout.flush()
+        try:
+            print('Performance (j = %d, t = %g): %f' % (opts.jitter,
+                opts.threshold, (100 * perf / optperf)))
+            sys.stdout.flush()
+        except ZeroDivisionError:
+            pass
         if port:
             port.close()
         channel.close()
