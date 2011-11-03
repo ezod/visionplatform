@@ -1,0 +1,58 @@
+model:
+    name:           CEI Open House Demo
+
+    boundary_padding:       150
+    res_min_acceptable:     0.5
+    blur_max_acceptable:    1.5
+    angle_max_ideal:        0.65
+    angle_max_acceptable:   1.25
+
+    cameras:
+        - name:         ABA
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            6.150000
+          f:            8.144193
+          s:            [0.009331, 0.009300]
+          o:            [323.488343, 294.343121]
+          dim:          [680, 512]
+          zS:           448.000000
+          pose:
+              T:            [-297.4806868811286, 69.16520637768299, -392.2325516592478]
+              R:            [0.05931901324009463, [-0.19058534274764616, -0.17613577600679406, -0.963910153929354]]
+              Rformat:      quaternion
+        - name:         ABB
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            6.150000
+          f:            7.996992
+          s:            [0.009308, 0.009300]
+          o:            [338.047438, 258.580730]
+          dim:          [680, 512]
+          zS:           448.000000
+          pose:
+              T:            [157.3806445723604, 111.38937670721444, -599.2711556916198]
+              R:            [-0.04032591596824655, [0.1445923146360916, -0.13104156308751252, -0.9799403300343984]]
+              Rformat:      quaternion
+        - name:         9B3
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            6.150000
+          f:            7.983776
+          s:            [0.009312, 0.009300]
+          o:            [343.189888, 258.302709]
+          dim:          [680, 512]
+          zS:           448.000000
+          pose:
+              T:            [-550.6666763384621, 2.2163130319283297, -313.720024569955]
+              R:            [0.026181706968055145, [0.3692435885641099, 0.02708541092042297, 0.9285623972511515]]
+              Rformat:      quaternion
+        - name:         99B
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          A:            6.150000
+          f:            8.004120
+          s:            [0.009309, 0.009300]
+          o:            [331.233739, 254.768168]
+          dim:          [680, 512]
+          zS:           448.000000
+          pose:
+              T:            [-66.0896161, 60.7403762, -507.79992]
+              R:            [0.021792532337598425, [0.0012726939930772035, -0.03402210212001273, -0.9991766692677869]]
+              Rformat:      quaternion
