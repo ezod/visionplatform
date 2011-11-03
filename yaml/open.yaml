@@ -79,3 +79,20 @@ model:
               T:            [262.5, 0, 0]
               R:            [1, [0, 0, 0]]
               Rformat:      quaternion
+        - name:         CalibrationPlate
+          sprites:      [scene/calibrationplate.yaml]
+          mount:        CalibrationPlateFrame
+          pose:
+              T:            [0, 0, 0]
+              R:            [0, 90, 0]
+              Rformat:      'euler-zyx-deg'
+        - name:         CalibrationPlateFrame
+
+relevance:
+    - name:         target
+      mount:        CalibrationPlateFrame
+      points:
+        - point:        [50, 50, 0, 0, 0]
+        - point:        [50, -50, 0, 0, 0]
+        - point:        [-50, -50, 0, 0, 0]
+        - point:        [-50, 50, 0, 0, 0]
