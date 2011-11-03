@@ -14,6 +14,7 @@ except ImportError:
 
 import socket
 import serial
+import sys
 import os.path
 from optparse import OptionParser
 from math import pi
@@ -54,6 +55,8 @@ if __name__ == '__main__':
         default=None, help='serial port for robot')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
         type='float', default=0.0, help='hysteresis threshold')
+    parser.add_option('-j', '--jitter', dest='jitter', action='store',
+        type='int', default=0, help='jitter threshold in frames')
     parser.add_option('-c', '--conf', dest='conf', default=None,
         help='custom configuration file to load')
     parser.add_option('-z', '--zoom', dest='zoom', default=False,
@@ -97,10 +100,17 @@ if __name__ == '__main__':
     # start
     best = None
     score = 0.0
+    current_frames = 0
+    optperf = 0.0
+    perf = 0.0
+    perf_delta = 0.0
     experiment.start()
     channel, details = sock.accept()
     try:
         while True:
+            if experiment.exit:
+                break
+            current_frames += 1
             current = best
             hstring = ''
             while not hstring.endswith('#'):
@@ -121,16 +131,31 @@ if __name__ == '__main__':
                 current=frozenset([camera]),
                 candidates=((vision_graph and score) and [frozenset(c) for c \
                 in vision_graph.neighbors(current) | set([current])] or None))
+            optperf += experiment.model.best_view(\
+                experiment.relevance_models[targetrm])[1]
             best = set(best).pop()
-            experiment.execute('select %s' % best)
-            #experiment.altdisplays[0].camera_view(experiment.model[best])
-            try:
-                experiment.execute('fov %s' % current)
-            except:
-                pass
-            experiment.execute('fov %s' % best)
+            if current != best:
+                experiment.execute('select %s' % best)
+                #experiment.altdisplays[0].camera_view(experiment.model[best])
+                try:
+                    experiment.execute('fov %s' % current)
+                except:
+                    pass
+                experiment.execute('fov %s' % best)
+                if current_frames > opts.jitter:
+                    perf += perf_delta
+                current_frames = 0
+                perf_delta = 0.0
+            perf_delta += score
             channel.sendall(best)
+            if positions and not 'J%d' % (pnum + 1) in positions:
+                break
     finally:
+        if current_frames > opts.jitter:
+            perf += perf_delta
+        print('Performance (j = %d, t = %g): %f' % (opts.jitter, opts.threshold,
+            (100 * perf / optperf)))
+        sys.stdout.flush()
         if port:
             port.close()
         channel.close()
