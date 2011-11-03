@@ -117,7 +117,7 @@ if __name__ == '__main__':
                 hstring += channel.recv(65536)
             camera, pnum, pose = parse_from_halcon(hstring.strip('#'))
             if pose:
-                pose = experiment.model[camera].pose + pose # TODO: check order and signs
+                pose = pose + experiment.model[camera].pose
                 experiment.model[targetobj].set_absolute_pose(pose)
             elif port:
                 experiment.model[targetobj].config = \
