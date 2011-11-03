@@ -39,7 +39,7 @@ primitives:
       color:        [0.47, 0.42, 0.40]
       material:     rough
 
-planes:
+triangles:
     - vertices:
         - [-203.5, -203.5, 163]
         - [203.5, -203.5, 163]
