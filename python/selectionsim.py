@@ -175,7 +175,8 @@ if __name__ == '__main__':
             current_frames = 0
             perf_delta = 0.0
         perf_delta += score
-    perf += perf_delta
+    if current_frames > opts.jitter:
+        perf += perf_delta
     print('Performance (j = %d, t = %g, C = %s, T = %s): %f' % (opts.jitter,
         opts.threshold, opts.cerror, opts.terror, (100 * perf / optperf)))
     sys.stdout.flush()
