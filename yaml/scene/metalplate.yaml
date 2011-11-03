@@ -1,0 +1,27 @@
+description:        Metal Plate
+
+primitives:
+    - type:         box
+      pos:          [0, 0, 10]
+      length:       525
+      width:        20
+      height:       525
+      color:        [0.46, 0.26, 0.16]
+      material:     wood
+    - type:         box
+      pos:          [0, 0, 20]
+      length:       510
+      width:        6
+      height:       510
+      color:        [0.6, 0.6, 0.6]
+      material:     rough
+
+triangles:
+    - vertices:
+        - [-262.5, -262.5, 10]
+        - [-262.5, 262.5, 10]
+        - [262.5, -262.5, 10]
+    - vertices:
+        - [262.5, -262.5, 10]
+        - [262.5, 262.5, 10]
+        - [-262.5, 262.5, 10]
