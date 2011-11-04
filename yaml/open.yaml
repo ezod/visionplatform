@@ -80,7 +80,7 @@ model:
               R:            [1, [0, 0, 0]]
               Rformat:      quaternion
         - name:         CalibrationPlate
-          sprites:      [scene/calibrationplate.yaml]
+          sprites:      [scene/calibrationplate100.yaml]
           mount:        CalibrationPlateFrame
           pose:
               T:            [0, 0, 0]

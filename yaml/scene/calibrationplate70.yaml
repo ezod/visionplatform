@@ -1,0 +1,10 @@
+description:    Calibration Plate
+
+primitives:
+    - type:         box
+      length:       2
+      height:       70
+      width:        70
+      color:        [1, 1, 1]
+      texture:      calibrationplate
+      mapping:      sign

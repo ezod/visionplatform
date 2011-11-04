@@ -95,7 +95,7 @@ model:
               R:            [180, [0, 1, 0]]
               Rformat:      'axis-angle-deg'
         - name:         CalibrationPlate
-          sprites:      [scene/calibrationplate.yaml]
+          sprites:      [scene/calibrationplate100.yaml]
           mount:        CalibrationPlateFrame
           pose:
               T:            [0, 0, 0]

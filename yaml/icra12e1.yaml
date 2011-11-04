@@ -146,7 +146,7 @@ model:
               R:            [-0.62, [-0.0095, -0.7826, -0.0368]]
               Rformat:      'quaternion'
         - name:         CalibrationPlate
-          sprites:      [scene/calibrationplate.yaml]
+          sprites:      [scene/calibrationplate100.yaml]
           mount:        CalibrationPlateFrame
           pose:
               T:            [0, 0, 0]
@@ -155,7 +155,7 @@ model:
         - name:         CalibrationPlateFrame
           mount:        robot
         - name:         SecondCalibrationPlate
-          sprites:      [scene/calibrationplate.yaml]
+          sprites:      [scene/calibrationplate100.yaml]
           mount:        SecondCalibrationPlateFrame
           pose:
               T:            [0, 0, 0]
