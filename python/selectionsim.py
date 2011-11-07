@@ -38,7 +38,8 @@ def create_error_model(model, poses=None, terror=0.0, rerror=0.0):
             emodel[camera].set_absolute_pose(poses[camera])
         else:
             emodel[camera].set_absolute_pose(\
-                A.random_pose_error(model[camera].pose, terror, rerror))
+                A.pose_error(model[camera].pose, A.random_unit_vector(), terror,
+                    A.random_unit_vector(), rerror))
         convert[camera] = -model[camera].pose + emodel[camera].pose
     for sceneobj in model.keys():
         if not sceneobj in model.cameras:
@@ -143,8 +144,9 @@ if __name__ == '__main__':
             experiment.model[targetobj].update_visualization()
         current = best
         if opts.terror:
-            etarget.set_absolute_pose(A.random_pose_error(experiment.\
-                relevance_models[targetrm].pose, opts.terror[0], opts.terror[1]))
+            etarget.set_absolute_pose(A.pose_error(experiment.relevance_models[\
+                targetrm].pose, A.random_unit_vector(), opts.terror[0],
+                A.random_unit_vector(), opts.terror[1]))
         elif opts.posetrack and emodel:
             etarget.set_absolute_pose(experiment.relevance_models[targetrm].pose)
         if current and score and opts.posetrack and emodel:
