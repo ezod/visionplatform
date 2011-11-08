@@ -28,23 +28,24 @@ def interpolate_points(points):
     return lambda t: A.Point([f[i](t) for i in range(3)])
 
 
-def create_error_model(model, poses=None, terror=0.0, rerror=0.0):
+def create_error_model(model, vectors=None, terror=0.0, rerror=0.0):
     emodel = A.Model(task_params=model._task_params)
     convert = {}
+    if not vectors:
+        vectors = {}
     for camera in model.cameras:
         emodel[camera] = A.Camera(camera, model[camera]._params,
             pose=model[camera]._pose, mount=model[camera].mount)
-        if poses:
-            emodel[camera].set_absolute_pose(poses[camera])
-        else:
-            emodel[camera].set_absolute_pose(\
-                A.pose_error(model[camera].pose, A.random_unit_vector(), terror,
-                    A.random_unit_vector(), rerror))
+        if not camera in vectors:
+            vectors[camera] = (A.random_unit_vector(), A.random_unit_vector())
+        emodel[camera].set_absolute_pose(\
+            A.pose_error(model[camera].pose, vectors[camera][0], terror,
+                vectors[camera][1], rerror))
         convert[camera] = -model[camera].pose + emodel[camera].pose
     for sceneobj in model.keys():
         if not sceneobj in model.cameras:
             emodel[sceneobj] = model[sceneobj]
-    return emodel, convert
+    return emodel, convert, vectors
 
 
 if __name__ == '__main__':
@@ -67,8 +68,8 @@ if __name__ == '__main__':
         nargs=2, type='float', default=None, help='camera calibration error')
     parser.add_option('-T', '--target-error', dest='terror', action='store',
         nargs=2, type='float', default=None, help='target pose error')
-    parser.add_option('-E', '--error-model', dest='emodel', action='store',
-        default=None, help='pickle of error model')
+    parser.add_option('-V', '--error-vectors', dest='vectors', action='store',
+        default=None, help='pickle of error model vectors')
     parser.add_option('-p', '--pose-tracking', dest='posetrack', default=False,
         action='store_true', help='target poses are obtained from cameras')
     opts, args = parser.parse_args()
@@ -102,16 +103,15 @@ if __name__ == '__main__':
             vision_graph = None
     # build camera error model
     if opts.cerror:
-        emodel, convert = create_error_model(experiment.model,
-            terror=opts.cerror[0], rerror=opts.cerror[1])
-        if opts.emodel:
-            poses = {}
-            for camera in emodel:
-                poses[camera] = emodel[camera].pose
-            pickle.dump(poses, open(opts.emodel, 'w'))
-    elif opts.emodel:
-        poses = pickle.load(open(opts.emodel, 'r'))
-        emodel, convert = create_error_model(experiment.model, poses=poses)
+        if opts.vectors:
+            try:
+                vectors = pickle.load(open(opts.vectors, 'r'))
+            except IOError:
+                vectors = None
+        emodel, convert, vectors = create_error_model(experiment.model,
+            vectors=vectors, terror=opts.cerror[0], rerror=opts.cerror[1])
+        if opts.vectors:
+            pickle.dump(vectors, open(opts.vectors, 'w'))
     else:
         emodel = None
     # set up target error model
