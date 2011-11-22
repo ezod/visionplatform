@@ -9,7 +9,7 @@ model:
 
     cameras:
         - name:         ABA
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/netsv0813v.yaml]
           A:            6.150000
           f:            8.144193
           s:            [0.009331, 0.009300]
@@ -22,7 +22,7 @@ model:
               R:            [-0.0084968960281705, [0.05886958918717783, 0.17829030253050704, 0.9821785448690691]]
               Rformat:      quaternion
         - name:         ABB
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/netsv0813v.yaml]
           A:            6.150000
           f:            7.996992
           s:            [0.009308, 0.009300]
@@ -35,7 +35,7 @@ model:
               R:            [0.08402584009073752, [-0.2764157188485574, 0.1286309351602087, 0.9486769665357923]]
               Rformat:      quaternion
         - name:         9B3
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/netsv0813v.yaml]
           A:            6.150000
           f:            7.983776
           s:            [0.009312, 0.009300]
@@ -48,7 +48,7 @@ model:
               R:            [-0.05453690306874337, [-0.2366433787438937, -0.014066818966011491, -0.9699627074088399]]
               Rformat:      quaternion
         - name:         99B
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [cameras/prosilicaec1350.yaml, lenses/netsv0813v.yaml]
           A:            6.150000
           f:            8.004120
           s:            [0.009309, 0.009300]
