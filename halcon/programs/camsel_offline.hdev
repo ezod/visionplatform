@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="753935787">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="376514244">
 <procedure name="main">
 <interface/>
 <body>
@@ -17,13 +17,13 @@
 <l>dev_open_window(0, 0, 680, 512, 'black', win)</l>
 <c></c>
 <c>* Necessary path directories</c>
-<l>internalpar_path := '/home/aaron/school/research/icra12/experiments/e1/internal/'</l>
+<l>internalpar_path := '/home/aaron/school/research/camsel/experiments/robot/internal/'</l>
 <l>descr_path := '/opt/halcon/calib/'</l>
-<l>image_path := '/home/aaron/school/research/icra12/experiments/e1/images/'</l>
+<l>image_path := '/home/aaron/school/research/camsel/experiments/robot/images/'</l>
 <l>target_descr:= descr_path+'caltab_100mm.descr'</l>
 <c></c>
 <c>* Open communications with external software</c>
-<l>open_socket_connect('localhost', 5673, ['timeout','protocol'], \
+<l>open_socket_connect('localhost', 5675, ['timeout','protocol'], \
                     ['infinite','TCP'], osock)</l>
 <c>* Initialize camera selection</c>
 <l>cam := 'XBA'</l>
