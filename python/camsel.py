@@ -55,7 +55,7 @@ if __name__ == '__main__':
         default=None, help='serial port for robot')
     parser.add_option('-t', '--threshold', dest='threshold', action='store',
         type='float', default=0.0, help='hysteresis threshold')
-    parser.add_option('-j', '--jitter', dest='jitter', action='store',
+    parser.add_option('-J', '--jitter', dest='jitter', action='store',
         type='int', default=0, help='jitter threshold in frames')
     parser.add_option('-c', '--conf', dest='conf', default=None,
         help='custom configuration file to load')
@@ -65,6 +65,8 @@ if __name__ == '__main__':
         default=None, help='pickle of vision graph')
     parser.add_option('-r', '--robotpath', dest='robotpath', action='store',
         default=None, help='robot positions file')
+    parser.add_option('-w', '--wtolerance', dest='w', action='store',
+        type='float', default=0.1, help='jitter tolerance')
     opts, args = parser.parse_args()
     modelfile, targetobj, targetrm = args[:3]
     # load model
@@ -100,21 +102,27 @@ if __name__ == '__main__':
     # start
     best = None
     score = 0.0
+    frames = 0
     current_frames = 0
-    optperf = 0.0
-    perf = 0.0
-    perf_delta = 0.0
+    Mbest = 0.0
+    M = 0.0
+    U = 0
     experiment.start()
     channel, details = sock.accept()
+    channel.settimeout(0.1)
     try:
         while True:
-            if experiment.exit:
-                break
+            frames += 1
             current_frames += 1
             current = best
             hstring = ''
             while not hstring.endswith('#'):
-                hstring += channel.recv(65536)
+                if experiment.exit:
+                    break
+                try:
+                    hstring += channel.recv(65536)
+                except:
+                    pass
             camera, pnum, pose = parse_from_halcon(hstring.strip('#'))
             if pose:
                 pose = pose + experiment.model[camera].pose
@@ -127,11 +135,11 @@ if __name__ == '__main__':
                     positions['J%d' % pnum] + [8.0]
             experiment.model[targetobj].update_visualization()
             best, score = experiment.model.best_view(\
-                experiment.relevance_models[targetrm], threshold=opts.threshold,
+                experiment.relevance_models[targetrm], threshold=(current_frames < opts.jitter and opts.threshold or 0.00001),
                 current=frozenset([camera]),
                 candidates=((vision_graph and score) and [frozenset(c) for c \
                 in vision_graph.neighbors(current) | set([current])] or None))
-            optperf += experiment.model.best_view(\
+            Mbest += experiment.model.best_view(\
                 experiment.relevance_models[targetrm])[1]
             best = set(best).pop()
             if current != best:
@@ -142,20 +150,16 @@ if __name__ == '__main__':
                 except:
                     pass
                 experiment.execute('fov %s' % best)
-                if current_frames > opts.jitter:
-                    perf += perf_delta
+                if current_frames < opts.jitter:
+                    U += 1
                 current_frames = 0
-                perf_delta = 0.0
-            perf_delta += score
+            M += score
             channel.sendall(best)
             if positions and not 'J%d' % (pnum + 1) in positions:
                 break
     finally:
-        if current_frames > opts.jitter:
-            perf += perf_delta
         try:
-            print('Performance (j = %d, t = %g): %f' % (opts.jitter,
-                opts.threshold, (100 * perf / optperf)))
+            print('A: %.4f, M: %.4f, U: %d' % ((opts.w * (M / Mbest)) / (float(U) / float(frames) + opts.w), (M / Mbest), U))
             sys.stdout.flush()
         except ZeroDivisionError:
             pass
