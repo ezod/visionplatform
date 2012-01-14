@@ -1,12 +1,6 @@
 model:
     name:           Basic
 
-    boundary_padding:       20.0
-    res_min_ideal:          3.0
-    res_min_acceptable:     0.5
-    blur_max_acceptable:    7.7419
-    angle_max_ideal:        1.3
-
     cameras:
         - name:         C1
           sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]

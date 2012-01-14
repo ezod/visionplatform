@@ -1,12 +1,6 @@
 model:
     name:           ICRA 2012 Experiment 1
 
-    boundary_padding:       150
-    res_min_acceptable:     0.5
-    blur_max_acceptable:    1.5
-    angle_max_ideal:        0.65
-    angle_max_acceptable:   1.25
-
     cameras:
         - name:         ABA
           sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
@@ -112,6 +106,11 @@ model:
               T:            [-138.4963944725755, 112.9457857056554, -1068.4645430283797]
               R:            [-0.7127115226709765, [-0.018566160363167522, -0.0566212219939967, 0.698921755503617]]
               Rformat:      quaternion
+
+    robots:
+        - name:         robot
+          robot:        robots/mitsubishirv1a.yaml
+          occlusion:    False
        
     scene:
         - name:         VisionPlatform
@@ -120,9 +119,6 @@ model:
               T:            [-978, -455, -553]
               R:            [0, 0, 0]
               Rformat:      'euler-zyx-deg'
-        - name:         robot
-          robot:        robots/mitsubishirv1a.yaml
-          occlusion:    False
         - name:         CameraFrame
           mount:        CameraFrameFrame
           pose:
@@ -164,18 +160,30 @@ model:
         - name:         SecondCalibrationPlateFrame
           mount:        robot
 
-relevance:
-    - name:         target
-      mount:        CalibrationPlateFrame
+tasks:
+    - name:                 target
+      parameters:
+          boundary_padding:     150
+          res_min_acceptable:   0.5
+          blur_max_acceptable:  1.5
+          angle_max_ideal:      0.65
+          angle_max_acceptable: 1.25
+      mount:                CalibrationPlateFrame
       points:
-        - point:        [50, 50, 0, 0, 0]
-        - point:        [50, -50, 0, 0, 0]
-        - point:        [-50, -50, 0, 0, 0]
-        - point:        [-50, 50, 0, 0, 0]
-    - name:         cell
-      step:         100
-      ddiv:         2.0
+        - [50, 50, 0, 0, 0]
+        - [50, -50, 0, 0, 0]
+        - [-50, -50, 0, 0, 0]
+        - [-50, 50, 0, 0, 0]
+    - name:                 cell
+      parameters:
+          boundary_padding:     150
+          res_min_acceptable:   0.5
+          blur_max_acceptable:  1.5
+          angle_max_ideal:      0.65
+          angle_max_acceptable: 1.25
+      step:                 100
+      ddiv:                 2.0
       ranges:
-        - x:            [200, 1500]
-          y:            [-450, 450]
-          z:            [0, 800]
+        - x: [200, 1500]
+          y: [-450, 450]
+          z: [0, 800]
