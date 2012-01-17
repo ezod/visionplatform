@@ -7,27 +7,27 @@ primitives:
       length:       914
       height:       210
       width:        4
-      color:        [0.1, 0.1, 0.1]
+      color:        [0.3, 0.3, 0.3]
       material:     plastic
     - type:         box
       pos:          [0, 0, -48]
       length:       914
       height:       210
       width:        4
-      color:        [0.1, 0.1, 0.1]
+      color:        [0.3, 0.3, 0.3]
       material:     plastic
     # rollers
     - type:         cylinder
       pos:          [-457, -105, -25]
       radius:       25
       axis:         [0, 210, 0]
-      color:        [0.2, 0.2, 0.2]
+      color:        [0.3, 0.3, 0.3]
       material:     plastic
     - type:         cylinder
       pos:          [457, -105, -25]
       radius:       25
       axis:         [0, 210, 0]
-      color:        [0.2, 0.2, 0.2]
+      color:        [0.3, 0.3, 0.3]
       material:     plastic
     # bars
     - type:         box
