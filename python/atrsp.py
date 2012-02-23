@@ -6,6 +6,7 @@ Assumptions:
     * Only one camera is being optimized at a time.
     * The task represents the goal for that camera.
     * The laser projects along M{-z} and across M{x}.
+    * The target is reasonably positioned for scanning.
 
 @author: Aaron Mavrinac
 @organization: University of Windsor
@@ -44,6 +45,13 @@ class LensLUT(object):
             self._values.append([float(n) for n in line])
         self.fnumber = fnumber
 
+    @property
+    def bounds(self):
+        """\
+        Bounds of the subject distance in the LUT.
+        """
+        return (self.values[0][0], self.values[0][-1])
+
     def parameters(self, zS):
         """\
         Interpolate and return the intrinsic parameters for a given subject
@@ -54,6 +62,7 @@ class LensLUT(object):
         @return: The corresponding interpolated intrinsic parameters.
         @rtype: C{tuple} of C{float}
         """
+        assert zS > self.bounds[0] and zS < self.bounds[1]
         i = bisect(self.values[0], zS)
         prop = (zS - self.values[0][i - 1]) / \
             (self.values[0][i] - self.values[0][i - 1])
@@ -109,10 +118,19 @@ if __name__ == '__main__':
         coverage = model.range_coverage_linear(tasks[task])
         return model.performance(tasks[task], coverage=coverage)
 
-    # TODO: compute bounds
-    # h:
-    # d:
-    # beta: (0, tasks[task].getparam('angle_max_acceptable'))
+    # compute bounds on h
+    zmin, zmax = float('inf'), -float('inf')
+    for point in tasks[task].mapped:
+        lp = model[model.active_laser].triangle.intersection(point,
+            point + Point((0, 1, 0)), limit=False)
+        if lp:
+            if lp.z < zmin:
+                zmin = lp.z
+            if lp.z > zmax:
+                zmax = lp.z
+
+    bounds = ((zmin, zmax), lut.bounds,
+              (0, tasks[task].getparam('angle_max_acceptable')))
 
     best, performance = particle_swarm_optimize(fitness, 3, bounds, opts.size,
         opts.omega, opts.phip, opts.phig, opts.it, opts.af)
