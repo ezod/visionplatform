@@ -38,11 +38,11 @@ class LensLUT(object):
         @param fnumber: The f-number (for computing effective aperture).
         @type fnumber: C{float}
         """
-        lines = csv.reader(open(filename, 'w'))
-        self._values = []
+        lines = csv.reader(open(filename, 'r'))
+        self.values = []
         # zS, f, ou, ov
         for line in lines:
-            self._values.append([float(n) for n in line])
+            self.values.append([float(n) for n in line])
         self.fnumber = fnumber
 
     @property
@@ -83,6 +83,15 @@ def camera_pose_from_xhdb(x, h, d, beta):
     R = Rotation.from_axis_angle(pi + beta, Point((1, 0, 0)))
     return Pose(T, R)
 
+def modify_camera(model, camera, lut, h, d, beta):
+    model[camera].set_absolute_pose(\
+        camera_pose_from_xhdb(model[camera].pose.T.x, h, d, beta))
+    f, ou, ov, A = lut.parameters(d)
+    model[camera].setparam('zS', d)
+    model[camera].setparam('f', f)
+    model[camera].setparam('o', [ou, ov])
+    model[camera].setparam('A', A)
+
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -97,7 +106,7 @@ if __name__ == '__main__':
     parser.add_option('-g', '--phig', dest='phig', action='store',
         type='float', default=0.0)
     parser.add_option('-i', '--iterations', dest='it', action='store',
-        type='it', default=1000)
+        type='int', default=1000)
     parser.add_option('-a', '--accept', dest='af', action='store',
         type='float', default=1.0)
     opts, args = parser.parse_args()
@@ -109,12 +118,9 @@ if __name__ == '__main__':
 
     def fitness(particle):
         h, d, beta = particle
-        model[camera].set_absolute_pose(\
-            camera_pose_from_xhdb(model[camera].pose.x, h, d, beta))
-        f, ou, ov, A = lut.parameters(d)
-        model[camera].setparam('f', f)
-        model[camera].setparam('o', [ou, ov])
-        model[camera].setparam('A', A)
+        if d < lut.bounds[0] or d > lut.bounds[1]:
+            return -float('inf')
+        modify_camera(model, camera, lut, h, d, beta)
         coverage = model.range_coverage_linear(tasks[task])
         return model.performance(tasks[task], coverage=coverage)
 
