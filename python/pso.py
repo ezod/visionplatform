@@ -63,8 +63,15 @@ def topology(f):
 @topology
 def ring(particles):
     for i, particle in enumerate(particles):
+        particle.neighborhood.add(particle)
         particle.neighborhood.add(particles[i - 1])
         particle.neighborhood.add(particles[(i + 1) % len(particles)])
+
+@topology
+def star(particles):
+    for particle in particles[1:]:
+        particle.neighborhood.add(particle)
+        particle.neighborhood.add(particles[0])
 
 
 constraints = {None: lambda particle, bounds: None}
