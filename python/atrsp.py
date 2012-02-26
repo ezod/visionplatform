@@ -62,15 +62,21 @@ class LensLUT(object):
         @return: The corresponding interpolated intrinsic parameters.
         @rtype: C{tuple} of C{float}
         """
-        assert zS > self.bounds[0] and zS < self.bounds[1]
-        i = bisect(self.values[0], zS)
-        prop = (zS - self.values[0][i - 1]) / \
-            (self.values[0][i] - self.values[0][i - 1])
+        assert zS >= self.bounds[0] and zS <= self.bounds[1]
         params = []
-        # f, ou, ov
-        for j in range(1, len(self.values)):
-            params.append(self.values[j][i - 1] + \
-                prop * (self.values[j][i] - self.values[j][i - 1]))
+        i = bisect(self.values[0], zS)
+        try:
+            prop = (zS - self.values[0][i - 1]) / \
+                (self.values[0][i] - self.values[0][i - 1])
+        except IndexError:
+            # f, ou, ov
+            for j in range(1, len(self.values)):
+                params.append(self.values[j][0])
+        else:
+            # f, ou, ov
+            for j in range(1, len(self.values)):
+                params.append(self.values[j][i - 1] + \
+                    prop * (self.values[j][i] - self.values[j][i - 1]))
         # A
         params.append(params[0] / self.fnumber)
         return params
@@ -109,20 +115,14 @@ if __name__ == '__main__':
         type='int', default=1000)
     parser.add_option('-a', '--accept', dest='af', action='store',
         type='float', default=1.0)
+    parser.add_option('-t', '--topology', dest='topology', action='store')
+    parser.add_option('-c', '--constraint', dest='constraint', action='store')
     opts, args = parser.parse_args()
 
     lutfile, modelfile, task, camera = args[:4]
 
     lut = LensLUT(lutfile, opts.fnumber)
     model, tasks = YAMLParser(modelfile).experiment
-
-    def fitness(particle):
-        h, d, beta = particle
-        if d < lut.bounds[0] or d > lut.bounds[1]:
-            return -float('inf')
-        modify_camera(model, camera, lut, h, d, beta)
-        coverage = model.range_coverage_linear(tasks[task])
-        return model.performance(tasks[task], coverage=coverage)
 
     # compute bounds on h
     zmin, zmax = float('inf'), -float('inf')
@@ -138,5 +138,14 @@ if __name__ == '__main__':
     bounds = ((zmin, zmax), lut.bounds,
               (0, tasks[task].getparam('angle_max_acceptable')))
 
+    def fitness(particle):
+        h, d, beta = particle
+        if d < lut.bounds[0] or d > lut.bounds[1]:
+            return -float('inf')
+        modify_camera(model, camera, lut, h, d, beta)
+        coverage = model.range_coverage_linear(tasks[task])
+        return model.performance(tasks[task], coverage=coverage)
+
     best, performance = particle_swarm_optimize(fitness, 3, bounds, opts.size,
-        opts.omega, opts.phip, opts.phig, opts.it, opts.af)
+        opts.omega, opts.phip, opts.phig, opts.it, opts.af,
+        topology_type=opts.topology, constraint_type=opts.constraint)
