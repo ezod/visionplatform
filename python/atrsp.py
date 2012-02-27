@@ -85,16 +85,18 @@ class LensLUT(object):
         return params
         
 
-def camera_pose_from_xhdb(x, h, d, beta):
-    y = -d * sin(beta)
-    z = d * cos(beta) + h
-    T = Point((x, y, z))
-    R = Rotation.from_axis_angle(pi + beta, Point((1, 0, 0)))
-    return Pose(T, R)
-
 def modify_camera(model, camera, lut, h, d, beta):
-    model[camera].set_absolute_pose(\
-        camera_pose_from_xhdb(model[camera].pose.T.x, h, d, beta))
+    if model[camera].pose.T.y < model[model.active_laser].pose.T.y:
+        y = -d * sin(beta) + model[model.active_laser].pose.T.y
+        z = d * cos(beta) + h
+        R = Rotation.from_axis_angle(pi + beta, Point((1, 0, 0)))
+    else:
+        y = d * sin(beta) + model[model.active_laser].pose.T.y
+        z = d * cos(beta) + h
+        R = Rotation.from_axis_angle(pi, Point((0, 1, 0))) + \
+            Rotation.from_axis_angle(-beta, Point((-1, 0, 0)))
+    T = Point((model[camera].pose.T.x, y, z))
+    model[camera].set_absolute_pose(Pose(T, R))
     f, ou, ov, A = lut.parameters(d)
     model[camera].setparam('zS', d)
     model[camera].setparam('f', f)
