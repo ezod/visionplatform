@@ -34,7 +34,7 @@ class Particle(numpy.ndarray):
 
     @property
     def gbest(self):
-        return (self._gbest, self._gbest_fitness)
+        return (self.__class__._gbest, self.__class__._gbest_fitness)
 
     def update(self, omega, phip, phig, constraint, bounds):
         for d in range(self.shape[0]):
@@ -49,9 +49,9 @@ class Particle(numpy.ndarray):
         if fitness > self._best_fitness:
             self._best = tuple(self)
             self._best_fitness = fitness
-            if fitness > self._gbest_fitness:
-                self._gbest = tuple(self)
-                self._gbest_fitness = fitness
+            if fitness > self.__class__._gbest_fitness:
+                self.__class__._gbest = tuple(self)
+                self.__class__._gbest_fitness = fitness
 
 
 topologies = {None: lambda particles: None}
