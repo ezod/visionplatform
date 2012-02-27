@@ -94,7 +94,8 @@ def random(particle, bounds):
 
 
 def particle_swarm_optimize(fitness, dimension, bounds, size, omega, phip, phig,
-                            it, af, topology_type=None, constraint_type=None):
+                            it=None, af=float('inf'), topology_type=None,
+                            constraint_type=None):
     particles = [Particle(dimension) for i in range(size)]
     for particle in particles:
         for d in range(dimension):
@@ -102,12 +103,13 @@ def particle_swarm_optimize(fitness, dimension, bounds, size, omega, phip, phig,
             span = bounds[d][1] - bounds[d][0]
             particle.velocity[d] = uniform(-span, span)
     topologies[topology_type](particles)
-    for i in range(it):
+    i = 0
+    while not it or i < it:
         for particle in particles:
             particle.update_best(fitness(particle))
         for particle in particles:
             particle.update(omega, phip, phig, constraints[constraint_type], bounds)
-        print('Global best for iteration %d: %s' % (i, particles[0].gbest))
+        yield particles[0].gbest
         if not particles[0].gbest[1] < af:
             break
-    return particles[0].gbest
+        i += 1
