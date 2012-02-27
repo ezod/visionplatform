@@ -86,7 +86,7 @@ class LensLUT(object):
         
 
 def modify_camera(model, camera, lut, h, d, beta):
-    if model[camera].pose.T.y < model[model.active_laser].pose.T.y:
+    if model[camera].negative_side:
         y = -d * sin(beta) + model[model.active_laser].pose.T.y
         z = d * cos(beta) + h
         R = Rotation.from_axis_angle(pi + beta, Point((1, 0, 0)))
@@ -135,6 +135,13 @@ if __name__ == '__main__':
     ex.execute('loadmodel %s' % args.modelfile)
     ex.execute('loadconfig')
 
+    for camera in args.cameras:
+        if ex.model[camera[0]].pose.T.y < \
+           ex.model[ex.model.active_laser].pose.T.y:
+            ex.model[camera[0]].negative_side = True
+        else:
+            ex.model[camera[0]].negative_side = False
+
     # compute bounds on h
     zmin, zmax = float('inf'), -float('inf')
     for point in ex.tasks[args.task].mapped:
@@ -170,6 +177,7 @@ if __name__ == '__main__':
         print('Global best for iteration %d: %s @ %f' % (i, best, m))
         if args.visualize:
             for c, camera in enumerate(args.cameras):
-                modify_camera(ex.model, camera[0], lut[c], *best)
+                modify_camera(ex.model, camera[0], lut[c],
+                    *best[3 * c: 3 * (c + 1)])
                 ex.model[camera[0]].update_visualization()
         i += 1
