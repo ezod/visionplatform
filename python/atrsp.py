@@ -120,13 +120,15 @@ if __name__ == '__main__':
         choices=pso.constraints.keys())
     parser.add_argument('-v', '--visualize', dest='visualize',
         action='store_true', default=False)
-    parser.add_argument('lutfile')
+    parser.add_argument('-C', '--cameras', dest='cameras', nargs=2,
+        action='append')
     parser.add_argument('modelfile')
     parser.add_argument('task')
-    parser.add_argument('cameras', nargs='+')
     args = parser.parse_args()
 
-    lut = LensLUT(args.lutfile, args.fnumber)
+    lut = []
+    for camera in args.cameras:
+        lut.append(LensLUT(camera[1], args.fnumber))
     ex = Experiment()
     ex.execute('loadmodel %s' % args.modelfile)
     ex.execute('loadconfig')
@@ -142,14 +144,17 @@ if __name__ == '__main__':
             if lp.z > zmax:
                 zmax = lp.z
 
-    bounds = ((zmin, zmax), lut.bounds,
-              (0, ex.tasks[args.task].getparam('angle_max_acceptable')))
+    bounds = []
+    for i in range(len(args.cameras)):
+        bounds += [(zmin, zmax), lut[i].bounds,
+                   (0, ex.tasks[args.task].getparam('angle_max_acceptable'))]
 
     def fitness(particle):
-        h, d, beta = particle
-        if d < lut.bounds[0] or d > lut.bounds[1]:
-            return -float('inf')
-        modify_camera(ex.model, args.cameras[0], lut, h, d, beta)
+        for i in range(len(args.cameras)):
+            h, d, beta = particle[3 * i: 3 * (i + 1)]
+            if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
+                return -float('inf')
+            modify_camera(ex.model, args.cameras[i][0], lut[i], h, d, beta)
         coverage = ex.model.range_coverage_linear(ex.tasks[args.task])
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
@@ -157,12 +162,12 @@ if __name__ == '__main__':
         ex.start()
 
     i = 0
-    for best, performance in pso.particle_swarm_optimize(fitness, 3, bounds,
-        args.size, args.omega, args.phip, args.phig, args.it, args.af,
+    for best, m in pso.particle_swarm_optimize(fitness, 3 * len(args.cameras),
+        bounds, args.size, args.omega, args.phip, args.phig, args.it, args.af,
         topology_type=args.topology, constraint_type=args.constraint):
-        print('Global best for iteration %d: %s @ %f' % (i, best, performance))
+        print('Global best for iteration %d: %s @ %f' % (i, best, m))
         if args.visualize:
-            modify_camera(ex.model, args.cameras[0], lut, best[0], best[1],
-                best[2])
-            ex.model[args.cameras[0]].update_visualization()
+            for c, camera in enumerate(args.cameras):
+                modify_camera(ex.model, camera[0], lut[c], *best)
+                ex.model[camera[0]].update_visualization()
         i += 1
