@@ -20,7 +20,7 @@ from math import pi, sin, cos
 from optparse import OptionParser
 
 from adolphus.geometry import Point, Rotation, Pose
-from adolphus.yamlparser import YAMLParser
+from adolphus.interface import Experiment
 
 from pso import particle_swarm_optimize
 
@@ -117,17 +117,21 @@ if __name__ == '__main__':
         type='float', default=1.0)
     parser.add_option('-t', '--topology', dest='topology', action='store')
     parser.add_option('-c', '--constraint', dest='constraint', action='store')
+    parser.add_option('-v', '--visualize', dest='visualize',
+        action='store_true', default=False)
     opts, args = parser.parse_args()
 
     lutfile, modelfile, task, camera = args[:4]
 
     lut = LensLUT(lutfile, opts.fnumber)
-    model, tasks = YAMLParser(modelfile).experiment
+    ex = Experiment()
+    ex.execute('loadmodel %s' % modelfile)
+    ex.execute('loadconfig')
 
     # compute bounds on h
     zmin, zmax = float('inf'), -float('inf')
-    for point in tasks[task].mapped:
-        lp = model[model.active_laser].triangle.intersection(point,
+    for point in ex.tasks[task].mapped:
+        lp = ex.model[ex.model.active_laser].triangle.intersection(point,
             point + Point((0, 1, 0)), limit=False)
         if lp:
             if lp.z < zmin:
@@ -136,16 +140,25 @@ if __name__ == '__main__':
                 zmax = lp.z
 
     bounds = ((zmin, zmax), lut.bounds,
-              (0, tasks[task].getparam('angle_max_acceptable')))
+              (0, ex.tasks[task].getparam('angle_max_acceptable')))
 
     def fitness(particle):
         h, d, beta = particle
         if d < lut.bounds[0] or d > lut.bounds[1]:
             return -float('inf')
-        modify_camera(model, camera, lut, h, d, beta)
-        coverage = model.range_coverage_linear(tasks[task])
-        return model.performance(tasks[task], coverage=coverage)
+        modify_camera(ex.model, camera, lut, h, d, beta)
+        coverage = ex.model.range_coverage_linear(ex.tasks[task])
+        return ex.model.performance(ex.tasks[task], coverage=coverage)
 
-    best, performance = particle_swarm_optimize(fitness, 3, bounds, opts.size,
-        opts.omega, opts.phip, opts.phig, opts.it, opts.af,
-        topology_type=opts.topology, constraint_type=opts.constraint)
+    if opts.visualize:
+        ex.start()
+
+    i = 0
+    for best, performance in particle_swarm_optimize(fitness, 3, bounds,
+        opts.size, opts.omega, opts.phip, opts.phig, opts.it, opts.af,
+        topology_type=opts.topology, constraint_type=opts.constraint):
+        print('Global best for iteration %d: %s @ %f' % (i, best, performance))
+        if opts.visualize:
+            modify_camera(ex.model, camera, lut, best[0], best[1], best[2])
+            ex.model[camera].update_visualization()
+        i += 1
