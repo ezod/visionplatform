@@ -19,8 +19,11 @@ import csv
 from bisect import bisect
 from math import pi, sin, cos
 
-from adolphus.geometry import Point, Rotation, Pose
-from adolphus.interface import Experiment
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', category=UserWarning)
+    from adolphus.geometry import Point, Rotation, Pose
+    from adolphus.interface import Experiment
 
 from pso import particle_swarm_optimize
 
