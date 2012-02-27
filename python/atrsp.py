@@ -14,10 +14,10 @@ Assumptions:
 @license: GPL-3
 """
 
+import argparse
 import csv
 from bisect import bisect
 from math import pi, sin, cos
-from optparse import OptionParser
 
 from adolphus.geometry import Point, Rotation, Pose
 from adolphus.interface import Experiment
@@ -100,37 +100,35 @@ def modify_camera(model, camera, lut, h, d, beta):
 
 
 if __name__ == '__main__':
-    parser = OptionParser()
-    parser.add_option('-f', '--fnumber', dest='fnumber', action='store',
-        type='float', default=1.0)
-    parser.add_option('-s', '--size', dest='size', action='store',
-        type='int', default=1)
-    parser.add_option('-o', '--omega', dest='omega', action='store',
-        type='float', default=0.0)
-    parser.add_option('-p', '--phip', dest='phip', action='store',
-        type='float', default=0.0)
-    parser.add_option('-g', '--phig', dest='phig', action='store',
-        type='float', default=0.0)
-    parser.add_option('-i', '--iterations', dest='it', action='store',
-        type='int', default=1000)
-    parser.add_option('-a', '--accept', dest='af', action='store',
-        type='float', default=1.0)
-    parser.add_option('-t', '--topology', dest='topology', action='store')
-    parser.add_option('-c', '--constraint', dest='constraint', action='store')
-    parser.add_option('-v', '--visualize', dest='visualize',
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--fnumber', dest='fnumber', type=float,
+        default=1.0)
+    parser.add_argument('-s', '--size', dest='size', type=int)
+    parser.add_argument('-o', '--omega', dest='omega', type=float)
+    parser.add_argument('-p', '--phip', dest='phip', type=float)
+    parser.add_argument('-g', '--phig', dest='phig', type=float)
+    parser.add_argument('-i', '--iterations', dest='it', type=int,
+        default=None)
+    parser.add_argument('-a', '--accept', dest='af', type=float,
+        default=float('inf'))
+    parser.add_argument('-t', '--topology', dest='topology')
+    parser.add_argument('-c', '--constraint', dest='constraint')
+    parser.add_argument('-v', '--visualize', dest='visualize',
         action='store_true', default=False)
-    opts, args = parser.parse_args()
+    parser.add_argument('lutfile')
+    parser.add_argument('modelfile')
+    parser.add_argument('task')
+    parser.add_argument('cameras', nargs='+')
+    args = parser.parse_args()
 
-    lutfile, modelfile, task, camera = args[:4]
-
-    lut = LensLUT(lutfile, opts.fnumber)
+    lut = LensLUT(args.lutfile, args.fnumber)
     ex = Experiment()
-    ex.execute('loadmodel %s' % modelfile)
+    ex.execute('loadmodel %s' % args.modelfile)
     ex.execute('loadconfig')
 
     # compute bounds on h
     zmin, zmax = float('inf'), -float('inf')
-    for point in ex.tasks[task].mapped:
+    for point in ex.tasks[args.task].mapped:
         lp = ex.model[ex.model.active_laser].triangle.intersection(point,
             point + Point((0, 1, 0)), limit=False)
         if lp:
@@ -140,25 +138,26 @@ if __name__ == '__main__':
                 zmax = lp.z
 
     bounds = ((zmin, zmax), lut.bounds,
-              (0, ex.tasks[task].getparam('angle_max_acceptable')))
+              (0, ex.tasks[args.task].getparam('angle_max_acceptable')))
 
     def fitness(particle):
         h, d, beta = particle
         if d < lut.bounds[0] or d > lut.bounds[1]:
             return -float('inf')
-        modify_camera(ex.model, camera, lut, h, d, beta)
-        coverage = ex.model.range_coverage_linear(ex.tasks[task])
-        return ex.model.performance(ex.tasks[task], coverage=coverage)
+        modify_camera(ex.model, args.cameras[0], lut, h, d, beta)
+        coverage = ex.model.range_coverage_linear(ex.tasks[args.task])
+        return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
-    if opts.visualize:
+    if args.visualize:
         ex.start()
 
     i = 0
     for best, performance in particle_swarm_optimize(fitness, 3, bounds,
-        opts.size, opts.omega, opts.phip, opts.phig, opts.it, opts.af,
-        topology_type=opts.topology, constraint_type=opts.constraint):
+        args.size, args.omega, args.phip, args.phig, args.it, args.af,
+        topology_type=args.topology, constraint_type=args.constraint):
         print('Global best for iteration %d: %s @ %f' % (i, best, performance))
-        if opts.visualize:
-            modify_camera(ex.model, camera, lut, best[0], best[1], best[2])
-            ex.model[camera].update_visualization()
+        if args.visualize:
+            modify_camera(ex.model, args.cameras[0], lut, best[0], best[1],
+                best[2])
+            ex.model[args.cameras[0]].update_visualization()
         i += 1
