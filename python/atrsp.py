@@ -25,7 +25,7 @@ with warnings.catch_warnings():
     from adolphus.geometry import Point, Rotation, Pose
     from adolphus.interface import Experiment
 
-from pso import particle_swarm_optimize
+import pso
 
 
 class LensLUT(object):
@@ -114,8 +114,10 @@ if __name__ == '__main__':
         default=None)
     parser.add_argument('-a', '--accept', dest='af', type=float,
         default=float('inf'))
-    parser.add_argument('-t', '--topology', dest='topology')
-    parser.add_argument('-c', '--constraint', dest='constraint')
+    parser.add_argument('-t', '--topology', dest='topology',
+        choices=pso.topologies.keys())
+    parser.add_argument('-c', '--constraint', dest='constraint',
+        choices=pso.constraints.keys())
     parser.add_argument('-v', '--visualize', dest='visualize',
         action='store_true', default=False)
     parser.add_argument('lutfile')
@@ -155,7 +157,7 @@ if __name__ == '__main__':
         ex.start()
 
     i = 0
-    for best, performance in particle_swarm_optimize(fitness, 3, bounds,
+    for best, performance in pso.particle_swarm_optimize(fitness, 3, bounds,
         args.size, args.omega, args.phip, args.phig, args.it, args.af,
         topology_type=args.topology, constraint_type=args.constraint):
         print('Global best for iteration %d: %s @ %f' % (i, best, performance))
