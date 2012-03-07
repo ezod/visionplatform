@@ -22,7 +22,7 @@ from math import pi, sin, cos
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning)
-    from adolphus.geometry import Point, Rotation, Pose
+    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose
     from adolphus.interface import Experiment
 
 import pso
@@ -68,15 +68,15 @@ class LensLUT(object):
         assert zS >= self.bounds[0] and zS <= self.bounds[1]
         params = []
         i = bisect(self.values[0], zS)
-        try:
-            prop = (zS - self.values[0][i - 1]) / \
-                (self.values[0][i] - self.values[0][i - 1])
-        except IndexError:
-            # f, ou, ov
+        if i == 0:
             for j in range(1, len(self.values)):
                 params.append(self.values[j][0])
+        elif i == len(self.values[0]):
+            for j in range(1, len(self.values)):
+                params.append(self.values[j][-1])
         else:
-            # f, ou, ov
+            prop = (zS - self.values[0][i - 1]) / \
+                (self.values[0][i] - self.values[0][i - 1])
             for j in range(1, len(self.values)):
                 params.append(self.values[j][i - 1] + \
                     prop * (self.values[j][i] - self.values[j][i - 1]))
@@ -85,7 +85,7 @@ class LensLUT(object):
         return params
         
 
-def modify_camera(model, camera, lut, h, d, beta):
+def modify_camera(model, camera, lut, x, h, d, beta):
     if model[camera].negative_side:
         y = -d * sin(beta) + model[model.active_laser].pose.T.y
         z = d * cos(beta) + h
@@ -95,7 +95,7 @@ def modify_camera(model, camera, lut, h, d, beta):
         z = d * cos(beta) + h
         R = Rotation.from_axis_angle(pi, Point((0, 1, 0))) + \
             Rotation.from_axis_angle(-beta, Point((-1, 0, 0)))
-    T = Point((model[camera].pose.T.x, y, z))
+    T = Point((x, y, z))
     model[camera].set_absolute_pose(Pose(T, R))
     f, ou, ov, A = lut.parameters(d)
     model[camera].setparam('zS', d)
@@ -142,28 +142,46 @@ if __name__ == '__main__':
         else:
             ex.model[camera[0]].negative_side = False
 
-    # compute bounds on h
+    # compute bounds on x and h
+    xmin, xmax = float('inf'), -float('inf')
     zmin, zmax = float('inf'), -float('inf')
     for point in ex.tasks[args.task].mapped:
         lp = ex.model[ex.model.active_laser].triangle.intersection(point,
             point + Point((0, 1, 0)), limit=False)
         if lp:
+            if lp.x < xmin:
+                xmin = lp.x
+            if lp.x > xmax:
+                xmax = lp.x
             if lp.z < zmin:
                 zmin = lp.z
             if lp.z > zmax:
                 zmax = lp.z
 
+    # compute bounds on d
+    dbounds = []
+    Ra = ex.tasks[args.task].getparam('res_min')[1]
+    Ha = ex.tasks[args.task].getparam('hres_min')[1]
+    for c, camera in enumerate(args.cameras):
+        modify_camera(ex.model, camera[0], lut[c], 0, 0, lut[c].bounds[1],
+            ex.tasks[args.task].getparam('angle_max')[1])
+        p = (-ex.model[camera[0]].pose).map(DirectionalPoint())
+        angle = p.direction_unit.angle(-p)
+        du = min(ex.model[camera[0]].zres(Ra),
+                 ex.model[camera[0]].zhres(Ha, angle))
+        dbounds.append((lut[c].bounds[0], du))
+
     bounds = []
     for i in range(len(args.cameras)):
-        bounds += [(zmin, zmax), lut[i].bounds,
+        bounds += [(xmin, xmax), (zmin, zmax), dbounds[i],
                    (0, ex.tasks[args.task].getparam('angle_max')[1])]
 
     def fitness(particle):
         for i in range(len(args.cameras)):
-            h, d, beta = particle[3 * i: 3 * (i + 1)]
+            x, h, d, beta = particle[4 * i: 4 * (i + 1)]
             if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
                 return -float('inf')
-            modify_camera(ex.model, args.cameras[i][0], lut[i], h, d, beta)
+            modify_camera(ex.model, args.cameras[i][0], lut[i], x, h, d, beta)
         coverage = ex.model.range_coverage_linear(ex.tasks[args.task])
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
@@ -172,13 +190,13 @@ if __name__ == '__main__':
         ex.event.wait()
 
     i = 0
-    for best, m in pso.particle_swarm_optimize(fitness, 3 * len(args.cameras),
+    for best, m in pso.particle_swarm_optimize(fitness, 4 * len(args.cameras),
         bounds, args.size, args.omega, args.phip, args.phig, args.it, args.af,
         topology_type=args.topology, constraint_type=args.constraint):
         print('Global best for iteration %d: %s @ %f' % (i, best, m))
         if args.visualize:
             for c, camera in enumerate(args.cameras):
                 modify_camera(ex.model, camera[0], lut[c],
-                    *best[3 * c: 3 * (c + 1)])
+                    *best[4 * c: 4 * (c + 1)])
                 ex.model[camera[0]].update_visualization()
         i += 1
