@@ -156,7 +156,7 @@ if __name__ == '__main__':
     bounds = []
     for i in range(len(args.cameras)):
         bounds += [(zmin, zmax), lut[i].bounds,
-                   (0, ex.tasks[args.task].getparam('angle_max_acceptable'))]
+                   (0, ex.tasks[args.task].getparam('angle_max')[1])]
 
     def fitness(particle):
         for i in range(len(args.cameras)):
@@ -169,6 +169,7 @@ if __name__ == '__main__':
 
     if args.visualize:
         ex.start()
+        ex.event.wait()
 
     i = 0
     for best, m in pso.particle_swarm_optimize(fitness, 3 * len(args.cameras),
