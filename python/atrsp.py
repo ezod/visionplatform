@@ -89,13 +89,13 @@ def modify_camera(model, camera, lut, x, h, d, beta):
     if model[camera].negative_side:
         y = -d * sin(beta) + model[model.active_laser].pose.T.y
         z = d * cos(beta) + h
-        R = Rotation.from_axis_angle(pi + beta, Point((1, 0, 0)))
+        R = Rotation.from_axis_angle(pi + beta, Point(1, 0, 0))
     else:
         y = d * sin(beta) + model[model.active_laser].pose.T.y
         z = d * cos(beta) + h
-        R = Rotation.from_axis_angle(pi, Point((0, 1, 0))) + \
-            Rotation.from_axis_angle(-beta, Point((-1, 0, 0)))
-    T = Point((x, y, z))
+        R = Rotation.from_axis_angle(pi, Point(0, 1, 0)) + \
+            Rotation.from_axis_angle(-beta, Point(-1, 0, 0))
+    T = Point(x, y, z)
     model[camera].set_absolute_pose(Pose(T, R))
     f, ou, ov, A = lut.parameters(d)
     model[camera].setparam('zS', d)
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     zmin, zmax = float('inf'), -float('inf')
     for point in ex.tasks[args.task].mapped:
         lp = ex.model[ex.model.active_laser].triangle.intersection(point,
-            point + Point((0, 1, 0)), limit=False)
+            point + Point(0, 1, 0), False)
         if lp:
             if lp.x < xmin:
                 xmin = lp.x
@@ -165,11 +165,11 @@ if __name__ == '__main__':
     for c, camera in enumerate(args.cameras):
         modify_camera(ex.model, camera[0], lut[c], 0, 0, lut[c].bounds[1],
             ex.tasks[args.task].getparam('angle_max')[1])
-        p = (-ex.model[camera[0]].pose).map(DirectionalPoint())
-        angle = p.direction_unit.angle(-p)
+        p = (-ex.model[camera[0]].pose).map(DirectionalPoint(0, 0, 0, 0, 0))
+        angle = p.direction_unit().angle(-p)
         du = min(ex.model[camera[0]].zres(Ra),
                  ex.model[camera[0]].zhres(Ha, angle))
-        dbounds.append((lut[c].bounds[0], du))
+        dbounds.append((lut[c].bounds[0], min(lut[c].bounds[1], du)))
 
     bounds = []
     for i in range(len(args.cameras)):
@@ -189,11 +189,13 @@ if __name__ == '__main__':
         ex.start()
         ex.event.wait()
 
+    print('%d,%g,%g,%g,%s,%s' % (args.size, args.omega, args.phip, args.phig, args.topology, args.constraint))
     i = 0
-    for best, m in pso.particle_swarm_optimize(fitness, 4 * len(args.cameras),
+    for best, F in pso.particle_swarm_optimize(fitness, 4 * len(args.cameras),
         bounds, args.size, args.omega, args.phip, args.phig, args.it, args.af,
         topology_type=args.topology, constraint_type=args.constraint):
-        print('Global best for iteration %d: %s @ %f' % (i, best, m))
+        #print('Global best for iteration %d: %s @ %f' % (i + 1, best, F))
+        print(F)
         if args.visualize:
             for c, camera in enumerate(args.cameras):
                 modify_camera(ex.model, camera[0], lut[c],
