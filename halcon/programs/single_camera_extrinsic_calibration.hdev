@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="1032939273">
+<hdevelop file_version="1.0" halcon_version="10.0.2" cs="862659329">
 <procedure name="main">
 <interface/>
 <body>
@@ -21,13 +21,11 @@
 <l>im_path:=  path+'.tiff'</l>
 <l>par_path:= path+'.cal'</l>
 <l>plate_description:= path+'.descr'</l>
-<c>* Correcting for radial distortion</c>
+<c></c>
 <l>read_image(image, im_path)</l>
-<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
 <l>read_cam_par(par_path, CamParIn)</l>
-<l>change_radial_distortion_cam_par ('fullsize', CamParIn, 0, CamParOut)</l>
-<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
-<l>change_radial_distortion_image (image, roi, ImageRec, CamParIn, CamParOut)</l>
+<c>* Correcting for radial distortion</c>
+<l>correct_radial_distortion (image, ImageRec, CamParIn, CamParOut)</l>
 <c>* Extrinsic calibration</c>
 <l>find_caltab (ImageRec, PlateRegion, plate_description, 3, 80, 3)</l>
 <l>find_marks_and_pose (ImageRec, PlateRegion,plate_description, CamParOut, \
