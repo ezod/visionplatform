@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="888147923">
+<procedure name="correct_radial_distortion">
+<interface>
+<io>
+<par name="image"/>
+</io>
+<oo>
+<par name="image_rec"/>
+</oo>
+<ic>
+<par name="campar_in"/>
+</ic>
+<oc>
+<par name="campar_out"/>
+</oc>
+</interface>
+<body>
+<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
+<l>change_radial_distortion_cam_par ('fixed', campar_in, 0, campar_out)</l>
+<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
+<l>change_radial_distortion_image (image, roi, image_rec, campar_in, campar_out)</l>
+<l>return ()</l>
+</body>
+<docu id="correct_radial_distortion">
+<abstract lang="en_US">Given an image and the internal parameters of the camera, the function returns the rectified image and camera parameters that yield no radial distortion.</abstract>
+<short lang="en_US">correct radial distortion</short>
+<parameters>
+<parameter id="campar_in">
+<default_type>real</default_type>
+<description lang="en_US">The internal camera parameters.</description>
+<mixed_type>optional</mixed_type>
+<multivalue>true</multivalue>
+<sem_type>number</sem_type>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
+<parameter id="campar_out">
+<default_type>integer</default_type>
+<description lang="en_US">The internal camera parameters with no distortion.</description>
+<mixed_type>optional</mixed_type>
+<multivalue>true</multivalue>
+<sem_type>number</sem_type>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
+<parameter id="image">
+<description lang="en_US">Distorted image.</description>
+<multichannel>false</multichannel>
+<multivalue>false</multivalue>
+<sem_type>image</sem_type>
+</parameter>
+<parameter id="image_rec">
+<description lang="en_US">Undistorted image.</description>
+<multichannel>false</multichannel>
+<multivalue>false</multivalue>
+<sem_type>image</sem_type>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>
