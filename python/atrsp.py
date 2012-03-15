@@ -22,10 +22,19 @@ from math import pi, sin, cos
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning)
-    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose
+    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose, \
+        gaussian_pose_error
+    from adolphus.laser import RangeModel
     from adolphus.interface import Experiment
+    from adolphus.yamlparser import YAMLParser
 
 import pso
+
+
+class DummyExperiment(object):
+    def __init__(self):
+        self.model = {}
+        self.tasks = {}
 
 
 class LensLUT(object):
@@ -120,27 +129,39 @@ if __name__ == '__main__':
         choices=pso.topologies.keys())
     parser.add_argument('-c', '--constraint', dest='constraint',
         choices=pso.constraints.keys())
-    parser.add_argument('-v', '--visualize', dest='visualize',
-        action='store_true', default=False)
     parser.add_argument('-C', '--cameras', dest='cameras', nargs=2,
         action='append')
+    parser.add_argument('-v', '--visualize', dest='visualize',
+        action='store_true', default=False)
+    parser.add_argument('-R', '--report', dest='report',
+        action='store_true', default=False)
+    parser.add_argument('-E', '--error', dest='error',
+        action='store_true', default=False)
+    parser.add_argument('-F', '--fvalues', dest='fvalues',
+        action='store_true', default=False)
     parser.add_argument('modelfile')
     parser.add_argument('task')
     args = parser.parse_args()
 
+    if args.visualize:
+        ex = Experiment()
+        ex.execute('loadmodel %s' % args.modelfile)
+        ex.execute('loadconfig')
+    else:
+        ex = DummyExperiment()
+        ex.model, ex.tasks = YAMLParser(args.modelfile).experiment
+
     lut = []
     for camera in args.cameras:
         lut.append(LensLUT(camera[1], args.fnumber))
-    ex = Experiment()
-    ex.execute('loadmodel %s' % args.modelfile)
-    ex.execute('loadconfig')
-
-    for camera in args.cameras:
         if ex.model[camera[0]].pose.T.y < \
            ex.model[ex.model.active_laser].pose.T.y:
             ex.model[camera[0]].negative_side = True
         else:
             ex.model[camera[0]].negative_side = False
+    for camera in ex.model.cameras:
+        if not camera in [c[0] for c in args.cameras]:
+            ex.model[camera].active = False
 
     # compute bounds on x and h
     xmin, xmax = float('inf'), -float('inf')
@@ -182,23 +203,71 @@ if __name__ == '__main__':
             if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
                 return -float('inf')
             modify_camera(ex.model, args.cameras[i][0], lut[i], x, h, d, beta)
-        coverage = ex.model.range_coverage_linear(ex.tasks[args.task])
+        coverage = ex.model.range_coverage(ex.tasks[args.task],
+            RangeModel.LinearTargetTransport)
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
     if args.visualize:
         ex.start()
         ex.event.wait()
 
-    print('%d,%g,%g,%g,%s,%s' % (args.size, args.omega, args.phip, args.phig, args.topology, args.constraint))
+    if args.fvalues:
+        print('%d,%g,%g,%g,%s,%s' % (args.size, args.omega, args.phip,
+            args.phig, args.topology, args.constraint))
     i = 0
-    for best, F in pso.particle_swarm_optimize(fitness, 4 * len(args.cameras),
-        bounds, args.size, args.omega, args.phip, args.phig, args.it, args.af,
-        topology_type=args.topology, constraint_type=args.constraint):
-        #print('Global best for iteration %d: %s @ %f' % (i + 1, best, F))
-        print(F)
-        if args.visualize:
-            for c, camera in enumerate(args.cameras):
-                modify_camera(ex.model, camera[0], lut[c],
-                    *best[4 * c: 4 * (c + 1)])
-                ex.model[camera[0]].update_visualization()
-        i += 1
+    try:
+        for best, F in pso.particle_swarm_optimize(fitness,
+            4 * len(args.cameras), bounds, args.size, args.omega, args.phip,
+            args.phig, args.it, args.af, topology_type=args.topology,
+            constraint_type=args.constraint):
+            if args.fvalues:
+                print(F)
+            if args.visualize:
+                for c, camera in enumerate(args.cameras):
+                    modify_camera(ex.model, camera[0], lut[c],
+                        *best[4 * c: 4 * (c + 1)])
+                    ex.model[camera[0]].update_visualization()
+            i += 1
+    except KeyboardInterrupt:
+        print('')
+
+    if args.report:
+        print('-' * 80)
+        print('SENSOR PLANNING REPORT')
+        print('-' * 80)
+        print('Global best after %d iterations: %f' % (i, F))
+        print('-' * 80)
+        for c, camera in enumerate(args.cameras):
+            params = best[4 * c: 4 * (c + 1)]
+            print('Camera %s: x = %g, h = %g, d = %g, beta = %g' \
+                % ((camera[0],) + params))
+            modify_camera(ex.model, camera[0], lut[c], *params)
+
+    if args.error:
+        original_pose = {}
+        for obj in [ex.model.active_laser, ex.tasks[args.task].mount.name] + \
+            [c[0] for c in args.cameras]:
+            original_pose[obj] = ex.model[obj].pose
+        print('-' * 80)
+        print('Error Values - (T, R) for Camera, Laser, Target')
+        while True:
+            errs = raw_input('> ')
+            if errs == 'q':
+                break
+            errv = [float(v) for v in errs.split(' ')]
+            for obj in original_pose:
+                if obj in ex.model.cameras:
+                    t, r = errv[0:2]
+                elif obj in ex.model.lasers:
+                    t, r = errv[2:4]
+                else:
+                    t, r = errv[4:6]
+                if not t and not r:
+                    continue
+                ex.model[obj].set_absolute_pose(gaussian_pose_error(\
+                original_pose[obj], t, r))
+                print('%s (orig.): %s' % (obj, original_pose[obj]))
+                print('%s (error): %s' % (obj, ex.model[obj].pose))
+            coverage = ex.model.range_coverage(ex.tasks[args.task],
+                RangeModel.LinearTargetTransport)
+            print(ex.model.performance(ex.tasks[args.task], coverage=coverage))
