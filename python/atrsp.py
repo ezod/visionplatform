@@ -25,8 +25,11 @@ with warnings.catch_warnings():
     from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose, \
         gaussian_pose_error
     from adolphus.laser import RangeModel
-    from adolphus.interface import Experiment
     from adolphus.yamlparser import YAMLParser
+    try:
+        from adolphus.interface import Experiment
+    except ImportError:
+        Experiment = None
 
 import pso
 
@@ -142,6 +145,8 @@ if __name__ == '__main__':
     parser.add_argument('modelfile')
     parser.add_argument('task')
     args = parser.parse_args()
+    if not Experiment:
+        args.visualize = False
 
     if args.visualize:
         ex = Experiment()
