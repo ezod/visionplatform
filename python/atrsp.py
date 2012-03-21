@@ -19,11 +19,15 @@ import csv
 from bisect import bisect
 from math import pi, sin, cos
 
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning)
-    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose, \
-        gaussian_pose_error
+    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose
     from adolphus.laser import RangeModel
     from adolphus.yamlparser import YAMLParser
     try:
@@ -97,6 +101,32 @@ class LensLUT(object):
         return params
         
 
+def load_model(modelfile, cameras, fnumber, visualize=False):
+    if visualize:
+        ex = Experiment()
+        ex.execute('loadmodel %s' % modelfile)
+        ex.execute('loadconfig')
+    else:
+        ex = DummyExperiment()
+        ex.model, ex.tasks = YAMLParser(modelfile).experiment
+    # situate cameras on a side of the laser
+    for camera in cameras:
+        if ex.model[camera[0]].pose.T.y < \
+           ex.model[ex.model.active_laser].pose.T.y:
+            ex.model[camera[0]].negative_side = True
+        else:
+            ex.model[camera[0]].negative_side = False
+    # disable unspecified cameras
+    for camera in ex.model.cameras:
+        if not camera in [c[0] for c in cameras]:
+            ex.model[camera].active = False
+    # load lens lookup tables
+    lut = []
+    for camera in cameras:
+        lut.append(LensLUT(camera[1], fnumber))
+    return ex, lut
+
+
 def modify_camera(model, camera, lut, x, h, d, beta):
     if model[camera].negative_side:
         y = -d * sin(beta) + model[model.active_laser].pose.T.y
@@ -114,6 +144,42 @@ def modify_camera(model, camera, lut, x, h, d, beta):
     model[camera].setparam('f', f)
     model[camera].setparam('o', [ou, ov])
     model[camera].setparam('A', A)
+
+
+def get_bounds(model, task, cameras, lut):
+    # compute bounds on x and h
+    xmin, xmax = float('inf'), -float('inf')
+    zmin, zmax = float('inf'), -float('inf')
+    for point in task.mapped:
+        lp = model[model.active_laser].triangle.intersection(point,
+            point + Point(0, 1, 0), False)
+        if lp:
+            if lp.x < xmin:
+                xmin = lp.x
+            if lp.x > xmax:
+                xmax = lp.x
+            if lp.z < zmin:
+                zmin = lp.z
+            if lp.z > zmax:
+                zmax = lp.z
+    # compute bounds on d
+    dbounds = []
+    Ra = task.getparam('res_min')[1]
+    Ha = task.getparam('hres_min')[1]
+    for c, camera in enumerate(cameras):
+        modify_camera(model, camera, lut[c], 0, 0, lut[c].bounds[1],
+            task.getparam('angle_max')[1])
+        p = (-model[camera].pose).map(DirectionalPoint(0, 0, 0, 0, 0))
+        angle = p.direction_unit().angle(-p)
+        du = min(ex.model[camera].zres(Ra),
+                 ex.model[camera].zhres(Ha, angle))
+        dbounds.append((lut[c].bounds[0], min(lut[c].bounds[1], du)))
+    # return bounds
+    bounds = []
+    for i in range(len(cameras)):
+        bounds += [(xmin, xmax), (zmin, zmax), dbounds[i],
+                   (0, task.getparam('angle_max')[1])]
+    return bounds
 
 
 if __name__ == '__main__':
@@ -136,143 +202,70 @@ if __name__ == '__main__':
         action='append')
     parser.add_argument('-v', '--visualize', dest='visualize',
         action='store_true', default=False)
-    parser.add_argument('-R', '--report', dest='report',
-        action='store_true', default=False)
-    parser.add_argument('-E', '--error', dest='error',
-        action='store_true', default=False)
     parser.add_argument('-F', '--fvalues', dest='fvalues',
+        action='store_true', default=False)
+    parser.add_argument('-R', '--report', dest='report',
         action='store_true', default=False)
     parser.add_argument('modelfile')
     parser.add_argument('task')
+    parser.add_argument('datafile')
     args = parser.parse_args()
     if not Experiment:
         args.visualize = False
 
-    if args.visualize:
-        ex = Experiment()
-        ex.execute('loadmodel %s' % args.modelfile)
-        ex.execute('loadconfig')
-    else:
-        ex = DummyExperiment()
-        ex.model, ex.tasks = YAMLParser(args.modelfile).experiment
+    ex, lut = load_model(args.modelfile, args.cameras, args.fnumber, args.visualize)
 
-    lut = []
-    for camera in args.cameras:
-        lut.append(LensLUT(camera[1], args.fnumber))
-        if ex.model[camera[0]].pose.T.y < \
-           ex.model[ex.model.active_laser].pose.T.y:
-            ex.model[camera[0]].negative_side = True
-        else:
-            ex.model[camera[0]].negative_side = False
-    for camera in ex.model.cameras:
-        if not camera in [c[0] for c in args.cameras]:
-            ex.model[camera].active = False
+    # get solution space bounds
+    bounds = get_bounds(ex.model, ex.tasks[args.task],
+        [camera[0] for camera in args.cameras], lut)
 
-    # compute bounds on x and h
-    xmin, xmax = float('inf'), -float('inf')
-    zmin, zmax = float('inf'), -float('inf')
-    for point in ex.tasks[args.task].mapped:
-        lp = ex.model[ex.model.active_laser].triangle.intersection(point,
-            point + Point(0, 1, 0), False)
-        if lp:
-            if lp.x < xmin:
-                xmin = lp.x
-            if lp.x > xmax:
-                xmax = lp.x
-            if lp.z < zmin:
-                zmin = lp.z
-            if lp.z > zmax:
-                zmax = lp.z
-
-    # compute bounds on d
-    dbounds = []
-    Ra = ex.tasks[args.task].getparam('res_min')[1]
-    Ha = ex.tasks[args.task].getparam('hres_min')[1]
-    for c, camera in enumerate(args.cameras):
-        modify_camera(ex.model, camera[0], lut[c], 0, 0, lut[c].bounds[1],
-            ex.tasks[args.task].getparam('angle_max')[1])
-        p = (-ex.model[camera[0]].pose).map(DirectionalPoint(0, 0, 0, 0, 0))
-        angle = p.direction_unit().angle(-p)
-        du = min(ex.model[camera[0]].zres(Ra),
-                 ex.model[camera[0]].zhres(Ha, angle))
-        dbounds.append((lut[c].bounds[0], min(lut[c].bounds[1], du)))
-
-    bounds = []
-    for i in range(len(args.cameras)):
-        bounds += [(xmin, xmax), (zmin, zmax), dbounds[i],
-                   (0, ex.tasks[args.task].getparam('angle_max')[1])]
-
+    # define fitness function
     def fitness(particle):
         for i in range(len(args.cameras)):
             x, h, d, beta = particle[4 * i: 4 * (i + 1)]
             if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
                 return -float('inf')
-            modify_camera(ex.model, args.cameras[i][0], lut[i], x, h, d, beta)
+            modify_camera(ex.model, args.cameras[i][0], lut[i],
+                x, h, d, beta)
         coverage = ex.model.range_coverage(ex.tasks[args.task],
             RangeModel.LinearTargetTransport)
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
+    # load visualization
     if args.visualize:
         ex.start()
         ex.event.wait()
 
-    if args.fvalues:
-        print('%d,%g,%g,%g,%s,%s' % (args.size, args.omega, args.phip,
-            args.phig, args.topology, args.constraint))
-    i = 0
+    # optimize
+    F = []
     try:
-        for best, F in pso.particle_swarm_optimize(fitness,
+        for best, Fi in pso.particle_swarm_optimize(fitness,
             4 * len(args.cameras), bounds, args.size, args.omega, args.phip,
             args.phig, args.it, args.af, topology_type=args.topology,
             constraint_type=args.constraint):
+            F.append(Fi)
             if args.fvalues:
-                print(F)
+                print(Fi)
             if args.visualize:
                 for c, camera in enumerate(args.cameras):
                     modify_camera(ex.model, camera[0], lut[c],
                         *best[4 * c: 4 * (c + 1)])
                     ex.model[camera[0]].update_visualization()
-            i += 1
     except KeyboardInterrupt:
-        print('')
+        pass
+
+    # dump data
+    result = {'args': args, 'best': best, 'F': F}
+    pickle.dump(result, open(args.datafile, 'w'))
 
     if args.report:
         print('-' * 80)
         print('SENSOR PLANNING REPORT')
         print('-' * 80)
-        print('Global best after %d iterations: %f' % (i, F))
+        print('Global best after %d iterations: %f' % (len(F), F[-1]))
         print('-' * 80)
         for c, camera in enumerate(args.cameras):
             params = best[4 * c: 4 * (c + 1)]
             print('Camera %s: x = %g, h = %g, d = %g, beta = %g' \
                 % ((camera[0],) + params))
             modify_camera(ex.model, camera[0], lut[c], *params)
-
-    if args.error:
-        original_pose = {}
-        for obj in [ex.model.active_laser, ex.tasks[args.task].mount.name] + \
-            [c[0] for c in args.cameras]:
-            original_pose[obj] = ex.model[obj].pose
-        print('-' * 80)
-        print('Error Values - (T, R) for Camera, Laser, Target')
-        while True:
-            errs = raw_input('> ')
-            if errs == 'q':
-                break
-            errv = [float(v) for v in errs.split(' ')]
-            for obj in original_pose:
-                if obj in ex.model.cameras:
-                    t, r = errv[0:2]
-                elif obj in ex.model.lasers:
-                    t, r = errv[2:4]
-                else:
-                    t, r = errv[4:6]
-                if not t and not r:
-                    continue
-                ex.model[obj].set_absolute_pose(gaussian_pose_error(\
-                original_pose[obj], t, r))
-                print('%s (orig.): %s' % (obj, original_pose[obj]))
-                print('%s (error): %s' % (obj, ex.model[obj].pose))
-            coverage = ex.model.range_coverage(ex.tasks[args.task],
-                RangeModel.LinearTargetTransport)
-            print(ex.model.performance(ex.tasks[args.task], coverage=coverage))
