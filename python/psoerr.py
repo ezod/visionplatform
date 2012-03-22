@@ -126,6 +126,7 @@ def particle_swarm_optimize(fitness, fitness_e, dimension, bounds, size, omega,
         for particle in particles:
             particle.update(omega, phip, phig, constraints[constraint_type], bounds)
         yield particles[0].gbest
-        if not particles[0].gbest[1] < af and not particles[0].gbest[2] < af:
+        if particles[0].gbest[1] >= af and \
+            (particles[0].gbest[2] == -float('inf') or particles[0].gbest[2] >= af):
             break
         i += 1
