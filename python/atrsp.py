@@ -18,6 +18,7 @@ import argparse
 import csv
 from bisect import bisect
 from math import pi, sin, cos
+from random import gauss
 
 try:
     import cPickle as pickle
@@ -27,7 +28,7 @@ except ImportError:
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning)
-    from adolphus.geometry import Point, DirectionalPoint, Rotation, Pose
+    from adolphus.geometry import Angle, Point, DirectionalPoint, Rotation, Pose, gaussian_pose_error
     from adolphus.laser import RangeModel
     from adolphus.yamlparser import YAMLParser
     try:
@@ -35,7 +36,7 @@ with warnings.catch_warnings():
     except ImportError:
         Experiment = None
 
-import pso
+import psoerr
 
 
 class DummyExperiment(object):
@@ -182,30 +183,31 @@ def get_bounds(model, task, cameras, lut):
     return bounds
 
 
+def gaussian_yz_pose_error(pose, tsigma, rsigma):
+    T, R = pose.T, pose.R
+    T = Point(gauss(T.x, tsigma), gauss(T.y, tsigma), gauss(T.z, tsigma))
+    R += Rotation.from_axis_angle(Angle(gauss(0, rsigma)), Point(1, 0, 0))
+    return Pose(T=T, R=R)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--fnumber', dest='fnumber', type=float,
-        default=1.0)
+    parser.add_argument('-f', '--fnumber', dest='fnumber', type=float, default=1.0)
     parser.add_argument('-s', '--size', dest='size', type=int)
     parser.add_argument('-o', '--omega', dest='omega', type=float)
     parser.add_argument('-p', '--phip', dest='phip', type=float)
     parser.add_argument('-g', '--phig', dest='phig', type=float)
-    parser.add_argument('-i', '--iterations', dest='it', type=int,
-        default=None)
-    parser.add_argument('-a', '--accept', dest='af', type=float,
-        default=float('inf'))
-    parser.add_argument('-t', '--topology', dest='topology',
-        choices=pso.topologies.keys())
-    parser.add_argument('-c', '--constraint', dest='constraint',
-        choices=pso.constraints.keys())
-    parser.add_argument('-C', '--cameras', dest='cameras', nargs=2,
-        action='append')
-    parser.add_argument('-v', '--visualize', dest='visualize',
-        action='store_true', default=False)
-    parser.add_argument('-F', '--fvalues', dest='fvalues',
-        action='store_true', default=False)
-    parser.add_argument('-R', '--report', dest='report',
-        action='store_true', default=False)
+    parser.add_argument('-i', '--iterations', dest='it', type=int, default=None)
+    parser.add_argument('-a', '--accept', dest='af', type=float, default=float('inf'))
+    parser.add_argument('-t', '--topology', dest='topology', choices=psoerr.topologies.keys())
+    parser.add_argument('-c', '--constraint', dest='constraint', choices=psoerr.constraints.keys())
+    parser.add_argument('-C', '--cameras', dest='cameras', nargs=2, action='append')
+    parser.add_argument('-v', '--visualize', dest='visualize', action='store_true', default=False)
+    parser.add_argument('-F', '--fvalues', dest='fvalues', action='store_true', default=False)
+    parser.add_argument('-R', '--report', dest='report', action='store_true', default=False)
+    parser.add_argument('--cerror', dest='cerror', type=float, nargs=2, default=(0.0, 0.0))
+    parser.add_argument('--terror', dest='terror', type=float, nargs=2, default=(0.0, 0.0))
+    parser.add_argument('-n', '--nerror', dest='nerror', type=int, default=0)
     parser.add_argument('modelfile')
     parser.add_argument('task')
     parser.add_argument('datafile')
@@ -219,8 +221,11 @@ if __name__ == '__main__':
     bounds = get_bounds(ex.model, ex.tasks[args.task],
         [camera[0] for camera in args.cameras], lut)
 
+    Ftimes = 0
+
     # define fitness function
     def fitness(particle):
+        globals()['Ftimes'] += 1
         for i in range(len(args.cameras)):
             x, h, d, beta = particle[4 * i: 4 * (i + 1)]
             if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
@@ -231,21 +236,49 @@ if __name__ == '__main__':
             RangeModel.LinearTargetTransport)
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
+    # define fitness with error function
+    def fitness_e(particle):
+        if not args.nerror:
+            return -float('inf')
+        globals()['Ftimes'] += args.nerror
+        for i in range(len(args.cameras)):
+            x, h, d, beta = particle[4 * i: 4 * (i + 1)]
+            if d < lut[i].bounds[0] or d > lut[i].bounds[1]:
+                return -float('inf')
+            modify_camera(ex.model, args.cameras[i][0], lut[i],
+                x, h, d, beta)
+        original_pose = {}
+        for obj in [ex.tasks[args.task].mount.name] + [c[0] for c in args.cameras]:
+            original_pose[obj] = ex.model[obj].pose
+        perf = []
+        for i in range(args.nerror):
+            for obj in original_pose:
+                if obj in ex.model.cameras:
+                    ex.model[obj].set_absolute_pose(gaussian_yz_pose_error(original_pose[obj], *args.cerror))
+                else:
+                    ex.model[obj].set_absolute_pose(gaussian_pose_error(original_pose[obj], *args.terror))
+            coverage = ex.model.range_coverage(ex.tasks[args.task], RangeModel.LinearTargetTransport)
+            perf.append(ex.model.performance(ex.tasks[args.task], coverage=coverage))
+        for obj in original_pose:
+            ex.model[obj].set_absolute_pose(original_pose[obj])
+        return sum(perf) / float(args.nerror)
+
     # load visualization
     if args.visualize:
         ex.start()
         ex.event.wait()
 
     # optimize
-    F = []
+    F, Fe = [], []
     try:
-        for best, Fi in pso.particle_swarm_optimize(fitness,
+        for best, Fi, Fei in psoerr.particle_swarm_optimize(fitness, fitness_e,
             4 * len(args.cameras), bounds, args.size, args.omega, args.phip,
             args.phig, args.it, args.af, topology_type=args.topology,
             constraint_type=args.constraint):
             F.append(Fi)
+            Fe.append(Fei)
             if args.fvalues:
-                print(Fi)
+                print('%g\t%g' % (Fi, Fei))
             if args.visualize:
                 for c, camera in enumerate(args.cameras):
                     modify_camera(ex.model, camera[0], lut[c],
@@ -255,7 +288,7 @@ if __name__ == '__main__':
         pass
 
     # dump data
-    result = {'args': args, 'best': best, 'F': F}
+    result = {'args': args, 'best': best, 'F': F, 'Fe': Fe, 'Ftimes': Ftimes}
     pickle.dump(result, open(args.datafile, 'w'))
 
     if args.report:

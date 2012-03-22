@@ -1,5 +1,4 @@
 import argparse
-from random import gauss
 
 try:
     import cPickle as pickle
@@ -10,16 +9,9 @@ import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning)
     from adolphus.laser import RangeModel
-    from adolphus.geometry import Point, Rotation, Angle, Pose, gaussian_pose_error
+    from adolphus.geometry import gaussian_pose_error
 
-from atrsp import load_model, modify_camera
-
-
-def gaussian_yz_pose_error(pose, tsigma, rsigma):
-    T, R = pose.T, pose.R
-    T = Point(gauss(T.x, tsigma), gauss(T.y, tsigma), gauss(T.z, tsigma))
-    R += Rotation.from_axis_angle(Angle(gauss(0, rsigma)), Point(1, 0, 0))
-    return Pose(T=T, R=R)
+from atrsp import load_model, modify_camera, gaussian_yz_pose_error
 
 
 if __name__ == '__main__':
