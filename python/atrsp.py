@@ -172,8 +172,8 @@ def get_bounds(model, task, cameras, lut):
             task.getparam('angle_max')[1])
         p = (-model[camera].pose).map(DirectionalPoint(0, 0, 0, 0, 0))
         angle = p.direction_unit().angle(-p)
-        du = min(ex.model[camera].zres(Ra),
-                 ex.model[camera].zhres(Ha, angle))
+        du = min(model[camera].zres(Ra),
+                 model[camera].zhres(Ha, angle))
         dbounds.append((lut[c].bounds[0], min(lut[c].bounds[1], du)))
     # return bounds
     bounds = []
@@ -221,6 +221,9 @@ if __name__ == '__main__':
     bounds = get_bounds(ex.model, ex.tasks[args.task],
         [camera[0] for camera in args.cameras], lut)
 
+    # create transport context
+    transport = RangeModel.LinearTargetTransport(ex.model)
+
     Ftimes = 0
 
     # define fitness function
@@ -232,8 +235,7 @@ if __name__ == '__main__':
                 return -float('inf')
             modify_camera(ex.model, args.cameras[i][0], lut[i],
                 x, h, d, beta)
-        coverage = ex.model.range_coverage(ex.tasks[args.task],
-            RangeModel.LinearTargetTransport)
+        coverage = ex.model.range_coverage(ex.tasks[args.task], transport)
         return ex.model.performance(ex.tasks[args.task], coverage=coverage)
 
     # define fitness with error function
@@ -257,7 +259,7 @@ if __name__ == '__main__':
                     ex.model[obj].set_absolute_pose(gaussian_yz_pose_error(original_pose[obj], *args.cerror))
                 else:
                     ex.model[obj].set_absolute_pose(gaussian_pose_error(original_pose[obj], *args.terror))
-            coverage = ex.model.range_coverage(ex.tasks[args.task], RangeModel.LinearTargetTransport)
+            coverage = ex.model.range_coverage(ex.tasks[args.task], transport)
             perf.append(ex.model.performance(ex.tasks[args.task], coverage=coverage))
         for obj in original_pose:
             ex.model[obj].set_absolute_pose(original_pose[obj])
