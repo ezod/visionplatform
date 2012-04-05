@@ -39,12 +39,19 @@ class Particle(numpy.ndarray):
     def gbest(self):
         return (self.__class__._gbest, self.__class__._gbest_fitness, self.__class__._gbest_fitness_e)
 
-    def update(self, omega, phip, phig, constraint, bounds):
+    def initialize(self, bounds, l=1.0):
         for d in range(self.shape[0]):
-            rp, rg = uniform(0, 1), uniform(0, 1)
-            self.velocity[d] = omega * self.velocity[d] \
-                + phip * rp * (self.best[0][d] - self[d]) \
-                + phig * rg * (self.nbest[0][d] - self[d])
+            self[d] = uniform(bounds[d][0], bounds[d][1])
+            span = bounds[d][1] - bounds[d][0]
+            vmax = l * span
+            self.velocity[d] = min(max(uniform(-span, span), -vmax), vmax)
+
+    def update(self, omega, phip, phin, constraint, bounds, l=1.0):
+        for d in range(self.shape[0]):
+            vmax = l * (bounds[d][1] - bounds[d][0])
+            self.velocity[d] = min(max(omega * self.velocity[d] \
+                + uniform(0, phip) * (self.best[0][d] - self[d]) \
+                + uniform(0, phin) * (self.nbest[0][d] - self[d]), -vmax), vmax)
         self += self.velocity
         constraint(self, bounds)
 
@@ -68,6 +75,13 @@ class Particle(numpy.ndarray):
                 self.__class__._gbest = tuple(self)
                 self.__class__._gbest_fitness = F
                 self.__class__._gbest_fitness_e = Fe
+    
+    def norm_dist_to_gbest(self, bounds):
+        base = numpy.array([b[0] for b in bounds])
+        span = numpy.array([b[1] for b in bounds]) - base
+        center = (numpy.array(self.gbest[0]) - base) / span
+        norm = (self - base) / span
+        return numpy.linalg.norm(norm - center)
 
 
 topologies = {None: lambda particles: None}
@@ -110,23 +124,23 @@ def random(particle, bounds):
 
 
 def particle_swarm_optimize(fitness, fitness_e, dimension, bounds, size, omega,
-                            phip, phig, it=None, af=float('inf'),
-                            topology_type=None, constraint_type=None):
+                            phip, phin, clamp=1.0, it=None, af=float('inf'),
+                            cluster=(1.0, 0.0), topology_type=None, constraint_type=None):
     particles = [Particle(dimension) for i in range(size)]
-    for particle in particles:
-        for d in range(dimension):
-            particle[d] = uniform(bounds[d][0], bounds[d][1])
-            span = bounds[d][1] - bounds[d][0]
-            particle.velocity[d] = uniform(-span, span)
     topologies[topology_type](particles)
+    for particle in particles:
+        particle.initialize(bounds, l=clamp)
     i = 0
     while not it or i < it:
         for particle in particles:
             particle.update_best(fitness, fitness_e)
-        for particle in particles:
-            particle.update(omega, phip, phig, constraints[constraint_type], bounds)
         yield particles[0].gbest
         if particles[0].gbest[1] >= af and \
             (particles[0].gbest[2] == -float('inf') or particles[0].gbest[2] >= af):
             break
+        if sum([particle.norm_dist_to_gbest(bounds) < cluster[1] \
+            for particle in particles]) >= int(cluster[0] * size):
+            break
+        for particle in particles:
+            particle.update(omega, phip, phin, constraints[constraint_type], bounds, l=clamp)
         i += 1

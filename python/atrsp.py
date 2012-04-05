@@ -36,7 +36,7 @@ with warnings.catch_warnings():
     except ImportError:
         Experiment = None
 
-import psoerr
+import psoerr as pso
 
 
 class DummyExperiment(object):
@@ -193,21 +193,23 @@ def gaussian_yz_pose_error(pose, tsigma, rsigma):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--fnumber', dest='fnumber', type=float, default=1.0)
-    parser.add_argument('-s', '--size', dest='size', type=int)
-    parser.add_argument('-o', '--omega', dest='omega', type=float)
+    parser.add_argument('-S', '--size', dest='size', type=int)
+    parser.add_argument('-w', '--omega', dest='omega', type=float)
     parser.add_argument('-p', '--phip', dest='phip', type=float)
-    parser.add_argument('-g', '--phig', dest='phig', type=float)
+    parser.add_argument('-n', '--phin', dest='phin', type=float)
+    parser.add_argument('-l', '--clamp', dest='clamp', type=float, default=1.0)
     parser.add_argument('-i', '--iterations', dest='it', type=int, default=None)
     parser.add_argument('-a', '--accept', dest='af', type=float, default=float('inf'))
-    parser.add_argument('-t', '--topology', dest='topology', choices=psoerr.topologies.keys())
-    parser.add_argument('-c', '--constraint', dest='constraint', choices=psoerr.constraints.keys())
+    parser.add_argument('-u', '--cluster', dest='cluster', nargs=2, type=float, default=(1.0, 0.0))
+    parser.add_argument('-t', '--topology', dest='topology', choices=pso.topologies.keys())
+    parser.add_argument('-c', '--constraint', dest='constraint', choices=pso.constraints.keys())
     parser.add_argument('-C', '--cameras', dest='cameras', nargs=2, action='append')
     parser.add_argument('-v', '--visualize', dest='visualize', action='store_true', default=False)
     parser.add_argument('-F', '--fvalues', dest='fvalues', action='store_true', default=False)
     parser.add_argument('-R', '--report', dest='report', action='store_true', default=False)
     parser.add_argument('--cerror', dest='cerror', type=float, nargs=2, default=(0.0, 0.0))
     parser.add_argument('--terror', dest='terror', type=float, nargs=2, default=(0.0, 0.0))
-    parser.add_argument('-n', '--nerror', dest='nerror', type=int, default=0)
+    parser.add_argument('-e', '--nerror', dest='nerror', type=int, default=0)
     parser.add_argument('modelfile')
     parser.add_argument('task')
     parser.add_argument('datafile')
@@ -273,10 +275,10 @@ if __name__ == '__main__':
     # optimize
     F, Fe = [], []
     try:
-        for best, Fi, Fei in psoerr.particle_swarm_optimize(fitness, fitness_e,
+        for best, Fi, Fei in pso.particle_swarm_optimize(fitness, fitness_e,
             4 * len(args.cameras), bounds, args.size, args.omega, args.phip,
-            args.phig, args.it, args.af, topology_type=args.topology,
-            constraint_type=args.constraint):
+            args.phin, args.clamp, args.it, args.af, args.cluster,
+            topology_type=args.topology, constraint_type=args.constraint):
             F.append(Fi)
             Fe.append(Fei)
             if args.fvalues:
