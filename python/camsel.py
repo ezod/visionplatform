@@ -21,6 +21,7 @@ from math import pi
 
 import adolphus as A
 
+from adolphus.interface import Experiment
 from halconparser import parse_pose_string
 from melfaparser import parse_positions
 from robotjpos import query_position
@@ -70,7 +71,7 @@ if __name__ == '__main__':
     opts, args = parser.parse_args()
     modelfile, targetobj, targetrm = args[:3]
     # load model
-    experiment = A.Experiment(zoom=opts.zoom)
+    experiment = Experiment(zoom=opts.zoom)
     #experiment.add_display()
     experiment.execute('loadmodel %s' % modelfile)
     experiment.execute('loadconfig %s' % opts.conf)

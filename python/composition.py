@@ -8,7 +8,7 @@ Module for composing multiple relative camera calibrations.
 """
 
 from adolphus.geometry import Pose
-from hypergraph import Graph, Edge
+from hypergraph.core import Graph, Edge
 from hypergraph.path import dijkstra
 from hypergraph.connectivity import connected
 

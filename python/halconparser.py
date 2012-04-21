@@ -84,7 +84,8 @@ def parse_pose_string(pose_string):
     @rtype: L{Pose}
     """
     pose = pose_string.split(',')
-    T = Point([1e3 * float(s) for s in [pose[4 * i + 3] for i in range(3)]])
+    p = [1e3 * float(s) for s in [pose[4 * i + 3] for i in range(3)]]
+    T = Point(p[0],p[1],p[2])
     rot = [pose[4 * i:4 * i + 3] for i in range(3)]
     for i in range(3):
         for j in range(3):
