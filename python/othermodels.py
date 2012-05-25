@@ -7,8 +7,24 @@ Alternate coverage models from the literature, for comparison.
 @license: GPL-3
 """
 
-from adolphus.coverage import Camera
+from copy import copy
+
+from adolphus.coverage import Task, Camera
 from adolphus.geometry import Point
+
+
+class ZhaoTask(Task):
+    """\
+    Range imaging task model class.
+
+    The L{ZhaoTask} adds to the set of task parameters:
+
+        - C{feature_length}: minimum height resolution (mm/pixel), ideal/acceptable.
+        - C{projected_length_min}: min. projected length of a feature (pixels).
+    """
+    defaults = copy(Task.defaults)
+    defaults['feature_length'] = 0.0
+    defaults['projected_length_min'] = 0.0
 
 
 class HorsterLienhartCamera(Camera):
@@ -35,12 +51,50 @@ class HorsterLienhartCamera(Camera):
         @return: The coverage strength of the point.
         @rtype: C{float}
         """
+        # FIXME: should map as if camera lies in x-y
         cp = self.pose.inverse().map(point)
         d = self.zres(task_params['res_min'][1])
         a = self.fov['tah'] / 2.0
         if cp.z > 0 and cp.z < d and cp.x < a * cp.z and cp.x > -a * cp.z:
             return 1.0
         return 0.0
+
+
+class ZhaoCamera(Camera):
+    """\
+        * J. Zhao, S.-C. Cheung, and T. Nguyen, "Optimal Camera Network
+          Configurations for Visual Tagging," IEEE J. Sel. Topics Signal
+          Processing, vol. 2, no. 4, pp. 464–479, 2008.
+    """
+    def strength(self, point, task_params):
+        """\
+        Return the coverage strength for a directional point. Note that since
+        the L{Camera} object is not internally aware of the scene it inhabits,
+        occlusion is computed in the L{Model} object instead.
+
+        Assumptions:
+
+            * Vertical occlusions (planes induced by M{x}-M{y} line segments).
+
+        @param point: The (directional) point to test.
+        @type point: L{Point}
+        @param task_params: Task parameters.
+        @type task_params: C{dict}
+        @return: The coverage strength of the point.
+        @rtype: C{float}
+        """
+        cp = self.pose.inverse().map(point)
+        try:
+            sigma = -(cp.unit()).dot(cp.direction_unit())
+        except (ValueError, AttributeError):
+            sigma = 1.0
+        try:
+            zl = self.zr(task_params['feature_length'] * sigma / \
+                task_params['projected_length_min'])
+        except ZeroDivisionError:
+            zl = float('inf')
+        return self.cv(cp, Task.defaults) * self.cd(cp, Task.defaults) \
+            if cp.z < zl else 0.0
 
 
 class ParkCamera(Camera):
