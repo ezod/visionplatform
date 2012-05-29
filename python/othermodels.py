@@ -7,24 +7,12 @@ Alternate coverage models from the literature, for comparison.
 @license: GPL-3
 """
 
+from math import atan2, pi
 from copy import copy
 
-from adolphus.coverage import Task, Camera
-from adolphus.geometry import Point
-
-
-class ZhaoTask(Task):
-    """\
-    Range imaging task model class.
-
-    The L{ZhaoTask} adds to the set of task parameters:
-
-        - C{feature_length}: minimum height resolution (mm/pixel), ideal/acceptable.
-        - C{projected_length_min}: min. projected length of a feature (pixels).
-    """
-    defaults = copy(Task.defaults)
-    defaults['feature_length'] = 0.0
-    defaults['projected_length_min'] = 0.0
+from adolphus.coverage import Task, Camera, Model
+from adolphus.geometry import Point, Angle, Rotation, Pose
+from adolphus.yamlparser import modeltypes
 
 
 class HorsterLienhartCamera(Camera):
@@ -33,6 +21,15 @@ class HorsterLienhartCamera(Camera):
           Sensors," in Multi-Camera Networks: Principles and Applications, H.
           Aghajan and A. Cavallaro, Eds. Academic Press, 2009, pp. 117-138.
     """
+    def _flatten_pose(self):
+        du = self.pose.map(Point(0, 0, 1)) - self.pose.T
+        R = \
+            Rotation.from_axis_angle(Angle(atan2(du.y, du.x) - pi / 2.0), Point(0, 0, 1)) + \
+            Rotation.from_axis_angle(-pi / 2.0, Point(1, 0, 0))
+        flat_pose = Pose(T=Point(self.pose.T.x, self.pose.T.y, 0), R=R)
+        self.set_absolute_pose(flat_pose)
+        self._flatten_pose = lambda a: None
+
     def strength(self, point, task_params):
         """\
         Return the coverage strength for a directional point. Note that since
@@ -51,7 +48,7 @@ class HorsterLienhartCamera(Camera):
         @return: The coverage strength of the point.
         @rtype: C{float}
         """
-        # FIXME: should map as if camera lies in x-y
+        self._flatten_pose()
         cp = self.pose.inverse().map(point)
         d = self.zres(task_params['res_min'][1])
         a = self.fov['tah'] / 2.0
@@ -60,11 +57,32 @@ class HorsterLienhartCamera(Camera):
         return 0.0
 
 
+class HorsterLienhartModel(Model):
+    yaml = {'cameras': HorsterLienhartCamera, 'tasks': Task}
+
+
+modeltypes['horsterlienhart'] = HorsterLienhartModel
+
+
+class ZhaoTask(Task):
+    """\
+    Range imaging task model class.
+
+    The L{ZhaoTask} adds to the set of task parameters:
+
+        - C{feature_length}: minimum height resolution (mm/pixel), ideal/acceptable.
+        - C{projected_length_min}: min. projected length of a feature (pixels).
+    """
+    defaults = copy(Task.defaults)
+    defaults['feature_length'] = 0.0
+    defaults['projected_length_min'] = 0.0
+
+
 class ZhaoCamera(Camera):
     """\
         * J. Zhao, S.-C. Cheung, and T. Nguyen, "Optimal Camera Network
           Configurations for Visual Tagging," IEEE J. Sel. Topics Signal
-          Processing, vol. 2, no. 4, pp. 464–479, 2008.
+          Processing, vol. 2, no. 4, pp. 464-479, 2008.
     """
     def strength(self, point, task_params):
         """\
@@ -74,7 +92,7 @@ class ZhaoCamera(Camera):
 
         Assumptions:
 
-            * Vertical occlusions (planes induced by M{x}-M{y} line segments).
+            * Vertical occlusions (planes project to M{x}-M{y} line segments).
 
         @param point: The (directional) point to test.
         @type point: L{Point}
@@ -89,12 +107,19 @@ class ZhaoCamera(Camera):
         except (ValueError, AttributeError):
             sigma = 1.0
         try:
-            zl = self.zr(task_params['feature_length'] * sigma / \
+            zl = self.zres(task_params['feature_length'] * sigma / \
                 task_params['projected_length_min'])
         except ZeroDivisionError:
             zl = float('inf')
         return self.cv(cp, Task.defaults) * self.cd(cp, Task.defaults) \
             if cp.z < zl else 0.0
+
+
+class ZhaoModel(Model):
+    yaml = {'cameras': ZhaoCamera, 'tasks': ZhaoTask}
+
+
+modeltypes['zhao'] = ZhaoModel
 
 
 class ParkCamera(Camera):
