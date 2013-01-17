@@ -1,10 +1,9 @@
-type:           'range'
-
 model:
     name:           'Range Imaging Test'
+    type:           'range'
 
     cameras:
-        - name:         'C'
+        - name:         'A'
           sprites:      ['cameras/sickivprangered.yaml', 'lenses/computarm3z1228cmp.yaml']
           A:            4.4765
           f:            12.5341
@@ -13,9 +12,18 @@ model:
           dim:          [1360, 1024]
           zS:           1216.1
           pose:
-            T:              [0, -882.76, 924.34]
-            R:              [-0.43, [0.9048, 0, 0]]
-            Rformat:        'quaternion'
+            T:              [0, -100, 0]
+
+        - name:         'B'
+          sprites:      ['cameras/sickivprangered.yaml', 'lenses/computarm3z1228cmp.yaml']
+          A:            4.4765
+          f:            12.5341
+          s:            0.00465
+          o:            [760.1805, 495.1859]
+          dim:          [1360, 1024]
+          zS:           1216.1
+          pose:
+            T:              [0, 100, 0]
 
     lasers:
         - name:         'L'
@@ -76,12 +84,13 @@ model:
 
 tasks:
     - name:                     'scan'
+      type:                     'range'
       parameters:
           boundary_padding:       20
-          #hres_min:               [0.1, 0.2]
-          #res_min:                [0.1, 0.5]
-          #blur_max:               [1.0, 2.0]
-          #angle_max:              [1.0, 1.0]
+          hres_min:               [0.1, 1.0]
+          res_min:                [0.5, 2.0]
+          blur_max:               ['default', 2.0]
+          angle_max:              [1.0, 'default']
       mount:                    'T'
       points:
         - [12, 20, 14.5]

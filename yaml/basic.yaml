@@ -3,10 +3,14 @@ model:
 
     cameras:
         - name:         C1
-          sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          #sprites:      [cameras/prosilicaec1350.yaml, lenses/computarm3z1228cmp.yaml]
+          sprites:      [scene/human.yaml]
           A:            4.4765
           f:            12.5341
           s:            0.00465
           o:            [760.1805, 495.1859]
           dim:          [1360, 1024]
           zS:           1216.1
+          #pose:
+          #  R:              [0.7071, [-0.7071, 0, 0]]
+          #  Rformat:        quaternion

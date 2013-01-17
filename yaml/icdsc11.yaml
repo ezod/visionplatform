@@ -288,10 +288,9 @@ relevance:
     - name:                   main
       parameters:
           boundary_padding:       20.0
-          res_min_ideal:          0.3
-          res_min_acceptable:     0.01
-          blur_max_acceptable:    1.7204
-          angle_max_ideal:        0.3
+          res_min:                0.3
+          blur_max:               ['default', 1.7204]
+          angle_max:              [0.3, 'default']
       step:                   250
       ranges:
         - x:            [-7000, -4000]

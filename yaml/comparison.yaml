@@ -1,0 +1,29 @@
+model:
+    name:           Comparison
+
+    cameras:
+        - name:         hydralisk
+          sprites:      [cameras/neticubens.yaml, lenses/netsv0813v.yaml]
+          A:            5
+          f:            12
+          s:            [0.0053, 0.0053]
+          o:            [640, 512]
+          dim:          [1280, 1024]
+          zS:           2500
+
+    scene:
+        - name:         room
+          sprites:
+            - triangles:        'room.raw'
+        - name:         mask
+        #- name:         plate
+        #  sprites:      [scene/calibrationplate200.yaml]
+        #  mount:        mask
+        #  pose:
+        #      T:            [0, 0, 0]
+        #      R:            [0, 90, 0]
+        #      Rformat:      'euler-zyx-deg'
+
+tasks:
+    - name:         face
+      mount:        mask

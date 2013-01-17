@@ -94,6 +94,16 @@ def parse_pose_string(pose_string):
     return Pose(T, R)
 
 
+def write_pose_string(pose):
+    P = []
+    R = pose.R.to_rotation_matrix()
+    for i in range(3):
+        for j in range(3):
+            P.append('%e' % R[i][j])
+        P.append('%e' % (pose.T[i] / 1e3))
+    return ','.join(P)
+
+
 def parse_calibration_files(directory):
     """\
     Parse a set of calibration pose files output by HALCON into a dict suitable

@@ -75,6 +75,16 @@ model:
               R:            [[-0.601332, 0.67475, -0.427916], [0.797152, 0.543048, -0.263909], [0.054306, -0.499811, -0.86443]]
               Rformat:      matrix
 
+    robots:
+        - name:         RV1A
+          robot:        robots/mitsubishirv1a.yaml
+          mount:        VisionPlatform
+          config:       [0.15, -0.16, 90.22, -0.31, -0.14, 0.06, 8.0]
+          pose:
+              T:            [978, 455, 553]
+              R:            [1, [0, 0, 0]]
+              Rformat:      quaternion
+
     scene:
         - name:         VisionPlatform
           sprites:      [scene/visionplatform.yaml]
@@ -125,8 +135,6 @@ model:
                     - [150, 100, 0]
                     - [-150, 100, 0]
                     - [-150, 100, -100]
-        - name:         Checkerboard
-          sprites:      [scene/checkerboard.yaml] 
 
 tasks:
     - name:         main

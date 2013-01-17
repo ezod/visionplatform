@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.0" halcon_version="10.0.1" cs="943199299">
+<hdevelop file_version="1.0" halcon_version="10.0.1" cs="315301639">
 <procedure name="get_pose">
 <interface>
 <io>
 <par name="image"/>
+<par name="roi"/>
 </io>
 <ic>
 <par name="int_par"/>
@@ -16,19 +17,20 @@
 </interface>
 <body>
 <c>* Correct for radial distortion</c>
-<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
+<l>*get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
 <l>change_radial_distortion_cam_par ('fullsize', int_par, 0, CamParOut)</l>
-<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
+<l>*gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
 <l>change_radial_distortion_image (image, roi, ImageRec, int_par, CamParOut)</l>
 <c>* Find the target and estimate the pose</c>
 <l>try</l>
 <l>    find_caltab (ImageRec, PlateRegion, plate_description, 3, 80, 3)</l>
 <l>    find_marks_and_pose (ImageRec, PlateRegion, plate_description, \
-                         CamParOut, 128, 10, 18, 0.9, 15, 100, \
+                         CamParOut, 128, 2, 4, 0.4, 3, 100, \
                          MarkRows, MarkColumns, EstimatedPose)</l>
 <l>    caltab_points (plate_description, X, Y, Z)</l>
 <l>    camera_calibration (X, Y, Z, MarkRows, MarkColumns, CamParOut, \
                 EstimatedPose, 'pose', CamParOut, target_pose, Errors)</l>
+<l>    disp_3d_coord_system(600, CamParOut, target_pose, 0.1)</l>
 <c>    * Convert the target pose to matrix and output it as a string </c>
 <c>    * appending the error</c>
 <l>    pose_to_string(target_pose, target_mat_string)</l>
@@ -81,6 +83,11 @@
 <type_list>
 <item>string</item>
 </type_list>
+</parameter>
+<parameter id="roi">
+<description lang="en_US">ROI.</description>
+<multivalue>false</multivalue>
+<sem_type>region</sem_type>
 </parameter>
 <parameter id="target_mat_string">
 <default_type>string</default_type>

@@ -26,9 +26,9 @@ class HorsterLienhartCamera(Camera):
         R = \
             Rotation.from_axis_angle(Angle(atan2(du.y, du.x) - pi / 2.0), Point(0, 0, 1)) + \
             Rotation.from_axis_angle(-pi / 2.0, Point(1, 0, 0))
-        flat_pose = Pose(T=Point(self.pose.T.x, self.pose.T.y, 0), R=R)
+        flat_pose = Pose(T=Point(self.pose.T.x, self.pose.T.y, 50), R=R)
         self.set_absolute_pose(flat_pose)
-        self._flatten_pose = lambda a: None
+        self._flatten_pose = lambda: None
 
     def strength(self, point, task_params):
         """\

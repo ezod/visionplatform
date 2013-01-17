@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.0" halcon_version="10.0.2" cs="622787839">
+<procedure name="main">
+<interface/>
+<body>
+<l>dev_close_window()</l>
+<l>dev_update_off()</l>
+<l>dev_open_window(0, 0, 670, 268, 'black', win)</l>
+<l>read_image(image, '002-defiler.jpg')</l>
+<l>read_cam_par('defiler_int.cal', campar_in)</l>
+<l>marker_size:= .2</l>
+<c></c>
+<c>* Correct radial distortion</c>
+<l>get_image_pointer1 (image, Pointer, Type, Width, Height)</l>
+<l>change_radial_distortion_cam_par ('fixed', campar_in, 0, campar_out)</l>
+<l>gen_rectangle1 (roi, 0, 0, Height-1, Width-1)</l>
+<l>change_radial_distortion_image (image, roi, image_rec, campar_in, campar_out)</l>
+<c></c>
+<c>* Find the target and estimate the pose</c>
+<l>try</l>
+<l>    dev_display(image_rec)</l>
+<l>    Row:= []</l>
+<l>    Column:= []</l>
+<l>    for i:=1 to 4 by 1</l>
+<c>        * Start with the special corner on the target</c>
+<l>        get_mbutton_sub_pix(win, R, C, Button)</l>
+<l>        Row:= [Row, R]</l>
+<l>        Column:= [Column, C]</l>
+<l>    endfor</l>
+<l>    Row:= [Row, Row[0]]</l>
+<l>    Column:= [Column, Column[0]]</l>
+<l>    gen_region_polygon(PlateRegion, Row, Column)</l>
+<l>    gen_contour_region_xld(PlateRegion, contour, 'border')</l>
+<l>    get_rectangle_pose(contour, campar_out, marker_size, marker_size, \
+                       'huber', 1.0, Pose, CovPose, Error)</l>
+<l>    set_origin_pose(Pose, -marker_size/2, -marker_size/2, 0, pose)</l>
+<l>    disp_3d_coord_system (win, campar_out, Pose, marker_size/2)</l>
+<c>    * Convert the target pose to matrix and output it as a string </c>
+<c>    * appending the error</c>
+<l>    pose_to_string(pose, target_mat_string)</l>
+<l>catch(Exception)</l>
+<c>    * If no target was found then the pose is an empty string</c>
+<l>    target_pose:= []</l>
+<l>    target_mat_string:= ''</l>
+<l>endtry</l>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+</hdevelop>
