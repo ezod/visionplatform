@@ -11,6 +11,7 @@ from math import atan2, pi, cos
 from copy import copy
 
 from adolphus.coverage import Task, Camera, Model
+from adolphus.laser import RangeTask, RangeCamera, RangeModel, LineLaser
 from adolphus.geometry import Point, Angle, Rotation, Pose
 from adolphus.yamlparser import modeltypes
 
@@ -151,7 +152,7 @@ class ParkCamera(Camera):
         except ZeroDivisionError:
             return 0.0
 
-class ScottTask(Task):
+class ScottTask(RangeTask):
     """\
     Range imaging task model class.
 
@@ -163,7 +164,7 @@ class ScottTask(Task):
     defaults = copy(Task.defaults)
     defaults['sample_density'] = 512
 
-class ScottCamera(Camera):
+class ScottCamera(RangeCamera):
     """\
         * W. R. Scott, "Model-Based View Planning," Machine Vision and Applications, 
           vol. 20, no. 1, pp. 47-69, 2009.
@@ -282,6 +283,11 @@ class ScottCamera(Camera):
         @rtype: C{float}
         """
         cp = self.pose.inverse().map(point)
+        try:
+            if abs(cp.direction_unit().x) > 1e-4:
+                raise ValueError('point is not aligned for range coverage')
+        except AttributeError:
+            raise TypeError('point must be directional for range coverage')
 
         # theta_yz is the incidence angle in the y-z plane of the laser with respect to 
         # the normal of the point's surface (in the global reference frame).
@@ -301,8 +307,8 @@ class ScottCamera(Camera):
             self.unit_step(self.mp(cp, theta_xz, theta_yz)) * \
             self.unit_step(self.sd(cp, task_params, theta_xz, theta_yz))
 
-class ScottModel(Model):
-    yaml = {'cameras': ScottCamera, 'tasks': ScottTask}
+class ScottModel(RangeModel):
+    yaml = {'cameras': ScottCamera, 'lasers': LineLaser, 'tasks': ScottTask}
 
 
 modeltypes['scott'] = ScottModel
