@@ -216,14 +216,16 @@ class ScottCamera(RangeCamera):
             sigma_z = 0
         return sigma_z
 
-    def sd(cp, tp, theta_xz, theta_yz):
+    def sd(cp, laser_pose, task_params, theta_xz, theta_yz):
         """\
         Sampling density.
 
-        @param p: The point to test, already in camera coordinates.
-        @type p: L{Point}
-        @param tp: Task parameters.
-        @type tp: C{dict}
+        @param cp: The point to test, already in camera coordinates.
+        @type cp: L{Point}
+        @param laser_pose: The laser's origin point.
+        @type laser_pose: L{Pose}
+        @param task_params: Task parameters.
+        @type task_params: C{dict}
         @param theta_xz: The incidence angle in the x-z plane.
         @type theta_xz: L{Angle}
         @param theta_yz: The incidence angle in the y-z plane.
@@ -245,15 +247,16 @@ class ScottCamera(RangeCamera):
                   min(self._params['s']))[0])
 
         # phi_xz is the angle between the z axis in the wcs and the line between the
-        # scene point and the laser. By construction of the viewpoint space, this
-        # angle can not be anything other than zero.
-        phi_xz = 0
+        # scene point and the laser.
+        point = self.pose.map(cp)
+        lp = laser_pose.inverse().map(point)
+        phi_xz = Point(0, 0, -1).angle(lp)
 
         # R_xz is the slant range. See Scott 2009, Section 2.3.1.
         R_xz = cp.z / cos(phi_xz)
 
         N_x = self._params['dim'][0]
-        N_y = tp['sample_density']
+        N_y = task_params['sample_density']
 
         rho_z = ((N_x - 1)**2 * (N_y - 1)**2 * cos(theta_xz)**2 * cos(theta_yz)**2) / \
             (phi_x**2 * ((R_xz**2 * (N_y - 1)**2 * cos(theta_yz)**2) + \
@@ -261,7 +264,7 @@ class ScottCamera(RangeCamera):
 
         return rho_z
 
-    def strength(self, point, task_params):
+    def strength(self, point, laser_pose, task_params):
         """\
         Return the coverage strength for a directional point. Note that since
         the L{Camera} object is not internally aware of the scene it inhabits,
@@ -269,6 +272,8 @@ class ScottCamera(RangeCamera):
 
         @param point: The (directional) point to test.
         @type point: L{Point}
+        @param laser_pose: The laser's origin point.
+        @type laser_pose: L{Pose}
         @param task_params: Task parameters.
         @type task_params: C{dict}
         @return: The coverage strength of the point.
@@ -293,7 +298,7 @@ class ScottCamera(RangeCamera):
 
         return self.cv(cp, task_params) * \
             self.unit_step(self.mp(cp, theta_xz, theta_yz)) * \
-            self.unit_step(self.sd(cp, task_params, theta_xz, theta_yz))
+            self.unit_step(self.sd(cp, laser_pose, task_params, theta_xz, theta_yz))
 
 class ScottModel(RangeModel):
     yaml = {'cameras': ScottCamera, 'lasers': LineLaser, 'tasks': ScottTask}
