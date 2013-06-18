@@ -207,7 +207,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('model', help='Yaml model file.')
     parser.add_argument('lut', help='Lens calibration file.')
-    parser.add_argument('vis', type=bool help='Eneble the visualization.')
+    parser.add_argument('vis', type=bool, help='Eneble the visualization.')
     args = parser.parse_args()
 
     experiment = ScottMethod(args.model, args.lut, args.vis)
