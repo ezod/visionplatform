@@ -113,7 +113,7 @@ class ScottMethod(object):
 
     def run(self):
         """
-        The main experiment function where the agent performs most of its operations.
+        The main experiment.
         """
 
     def update_camera(self, index):
@@ -130,7 +130,7 @@ class ScottMethod(object):
         self.cam.setparam('o', o)
         self.cam.setparam('zS', self.lens_list['zS'])
 
-    def genViewPoints(self, scene_points, mode='flat'):
+    def gen_view_points(self, scene_points, mode='flat'):
         """\
         Generate the solution space as the list of viewpoints.
 
@@ -179,7 +179,7 @@ class ScottMethod(object):
             view_point_poses.append(new_pose)
         return view_points, view_point_poses
 
-    def genVisualMatrix(self, view_points, view_point_poses, scene_points):
+    def gen_visual_matrix(self, view_points, view_point_poses, scene_points):
         """\
         Compute the measurability matrix.
 
@@ -206,8 +206,10 @@ class ScottMethod(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('model', help='Yaml model file.')
+    parser.add_argument('lut', help='Lens calibration file.')
+    parser.add_argument('vis', type=bool help='Eneble the visualization.')
     args = parser.parse_args()
 
-    agent = CameraAgent(args.model, camCandidates, lensCandidates, vis=True)
+    experiment = ScottMethod(args.model, args.lut, args.vis)
     x = raw_input('Press Enter to begin.\n')
-    agent.run()
+    experiment.run()
