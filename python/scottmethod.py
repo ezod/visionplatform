@@ -18,10 +18,24 @@ from numpy import array, zeros, matrix, linalg
 from math import pi, sqrt, sin, cos, asin, acos, atan2
 
 from adolphus.interface import Experiment
-from adolphus.coverage import PointCache, Camera
+from adolphus.coverage import PointCache, Camera, Task
 from adolphus.geometry import gaussian_pose_error, DirectionalPoint
 from adolphus.geometry import Angle, Point, Quaternion, Rotation, Pose
 
+
+def avg_points(X):
+    """
+    Average a list of 3D points.
+
+    @param X: The 3D points.
+    @type X: C{List} of L{Point}
+    @return: The average.
+    @rtype: L{Point}
+    """
+    avg = Point(0,0,0)
+    for p in X:
+        avg += p
+    return avg / float(len(X))
 
 def read_csv(filename, field_names=None):
     """\
@@ -69,9 +83,9 @@ def read_csv(filename, field_names=None):
                     if item[0] == "\"" and item[-1] == "\"":
                         item = item[1:-1]
                 try:
-                    csv_dict[field].append(item)
+                    csv_dict[field].append(float(item))
                 except KeyError:
-                    csv_dict[field] = [item]
+                    csv_dict[field] = [float(item)]
     return csv_dict, field_names
 
 class ScottMethod(object):
@@ -89,32 +103,56 @@ class ScottMethod(object):
         @param vis: Enable visualization.
         @type vis: C{bool}
         """
-        csv_dict, field_names = read_csv(lens_list)
-        self.lens_list = csv_dict
+        csv_dict, field_names = read_csv(lens_lut)
+        self.lens_dict = csv_dict
         self.vis = vis
 
-        # setup the camera model
+        # setup the camera model.
         self.exp = Experiment(zoom=False)
+        # TODO: Load Scott's range model and coverage model.
         self.exp.execute('loadmodel %s' % model_file)
         self.exp.execute('loadconfig %s' % '')
 
-        # Some shortcuts
+        # Some shortcuts.
         self.model = self.exp.model
         self.cam = self.exp.model['C']
-        # TODO: Set this.
-        #self.laser =
+        self.laser = self.exp.model['L']
         self.tasks = self.exp.tasks
-        self.task_par = self.tasks['R'].params
+        self.task_par = self.tasks['T'].params
         self.cam_par = self.model['C'].params
 
-        # start the experiment
-        if vis:
+        # start the experiment.
+        if self.vis:
             self.exp.start()
 
     def run(self):
         """
         The main experiment.
         """
+        # Generate the scene point from the scene directly.
+        scene_points = self.gen_scene_points(list(self.model['CAD'].triangles))
+        scene_points_c = PointCache()
+        for point in scene_points:
+            scene_points_c[point] = 1.0
+        self.tasks['T'] = Task(self.task_par, scene_points_c)
+
+        # Visualize scene points.
+        if self.vis:
+            self.tasks['T'].visualize()
+            self.tasks['T'].update_visualization()
+
+        # Generate the viewpoint solution space.
+        view_points, view_point_poses = self.gen_view_points(scene_points)
+
+        # Visualize view points.
+        if self.vis:
+            view_points_c = PointCache()
+            for point in view_points:
+                view_points_c[point] = 1.0
+            view_points_c.visualize()
+
+        # Generate the measurability matrix.
+        m_matrix = self.gen_visual_matrix(view_points, view_point_poses, scene_points)
 
     def update_camera(self, index):
         """
@@ -123,12 +161,32 @@ class ScottMethod(object):
         @param index: The location of the camera parameters in the parameter's list.
         @type index: C{int}
         """
-        A = self.lens_list['f'] / self.lens_list['stop']
-        o = [self.lens_list['o_u'], self.lens_list['o_v']]
+        A = self.lens_dict['f'][index] / self.lens_dict['stop'][index]
+        o = [self.lens_dict['ou'][index], self.lens_dict['ov'][index]]
         self.cam.setparam('A', A)
-        self.cam.setparam('f', self.lens_list['f'])
+        self.cam.setparam('f', self.lens_dict['f'][index])
         self.cam.setparam('o', o)
-        self.cam.setparam('zS', self.lens_list['zS'])
+        self.cam.setparam('zS', self.lens_dict['zS'][index])
+
+    def gen_scene_points(self, triangles):
+        """\
+        Generate the directional points that model the task from the list of
+        triangles of the associated CAD file as given by the raw triangle
+        representation.
+
+        @param triangles: The collection of triangles in the model representation.
+        @type triangles: C{list} of L{adolphus.geometry.Triangle}
+        @return: A list of directional points.
+        @rtype: C{list} of L{DirectionalPoint}
+        """
+        points = []
+        for occ_triangle in triangles:
+            triangle = occ_triangle.mapped_triangle()
+            average = avg_points(triangle.vertices)
+            normal = triangle.normal()
+            points.append(DirectionalPoint(average.x, average.y, average.z, \
+                normal.angle(Point(0, 0, 1)), atan2(normal.y, normal.x)))
+        return points
 
     def gen_view_points(self, scene_points, mode='flat'):
         """\
@@ -146,11 +204,28 @@ class ScottMethod(object):
         view_points = []
         view_point_poses = []
         flat = True
-        # TODO: Change the standoff calculation as per Scott 2009.
-        standoff = self.cam.zres(self.task_par['res_min'][0])
-        # TODO: Update the camera after computing the standoff distance.
-        # Updating the camera after computing the standoff distance simulates
+        # Standoff calculation as described in Scott 2009, Section 4.4.3.
+        f_d = 1.02
+        R_o = max(self.cam.zres(self.task_par['res_max'][1]), \
+            self.cam.zc(self.task_par['blur_max'][1] * \
+            min(self.cam.getparam('s')))[0])
+        e = 1e9
+        for zS in self.lens_dict['zS']:
+            if abs(zS - (f_d * R_o)) < e:
+                e = abs(zS - (f_d * R_o))
+                index = self.lens_dict['zS'].index(zS)
+        cam_standoff = self.lens_dict['zS'][index]
+        # Updating the camera after computing the camera standoff distance simulates
         # the action of focusing the lens.
+        self.update_camera(index)
+        # This implementation assumes that the camera is mounted on the laser
+        # and it is in fact the laser that moves.
+        self.cam.mount = self.laser
+        T = Point(0, cam_standoff * sin(0.7853), 0)
+        R = Rotation.from_euler('zyx', (Angle(-0.7853), Angle(0), Angle(0)))
+        self.cam.set_relative_pose(Pose(T, R))
+        # The laser standoff.
+        standoff = cam_standoff * cos(0.7853)
         for point in scene_points:
             x = point.x + (standoff * sin(point.rho) * cos(point.eta))
             y = point.y + (standoff * sin(point.rho) * sin(point.eta))
@@ -199,15 +274,16 @@ class ScottMethod(object):
                 # This assumes that the camera is mounted on the laser and both
                 # move simultaneously. See Scott 2009, Section 2.3.1.
                 self.laser.pose = view_point_poses[j]
-                vis_matrix[i,j] = self.cam.strength(scene_points[i], self.laser.pose \
-                    self.task_par)
-        return visMatrix
+                vis_matrix[i,j] = self.cam.strength(scene_points[i], \
+                    self.laser.pose, self.task_par)
+        return vis_matrix
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('model', help='Yaml model file.')
     parser.add_argument('lut', help='Lens calibration file.')
-    parser.add_argument('vis', type=bool, help='Eneble the visualization.')
+    parser.add_argument('--vis', type=bool, default=False, \
+        help='Eneble the visualization.')
     args = parser.parse_args()
 
     experiment = ScottMethod(args.model, args.lut, args.vis)
