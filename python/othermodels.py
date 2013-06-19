@@ -201,8 +201,16 @@ class ScottCamera(RangeCamera):
         @return: The measurement precision.
         @rtype: C{bool}
         """
-        # C_z is the z_S parameter, see El-Hakim 1995, Section 5.2.
-        C_z = self.getparam('zS')
+        # C_z is a curve fitting coefficient of the response of the 3D sensor's
+        # accuracy versus the "z" distance variation with respect to "zS",
+        # see El-Hakim 1995, Section 5.2. The numerator of sigma_z is effectively
+        # modeling focus and the depth of field. A mayor flaw is that C_z is obtained
+        # from calibration of the camera system, however this calibration assumes
+        # a lens and therefore a standoff distance has been selected. Since the
+        # standoff distance is part of the viewpoint selection process itself, this
+        # method faces the "Chicken and egg problem".
+        # Since neither Scott nor El-Hakim explain more about C_z, we set it here to 1.
+        C_z = 1
 
         # t_yz is the cut-off angle on the y-z plane at which the sensor can not
         # produce an output, Scott 2009 Section 2.3.1.
