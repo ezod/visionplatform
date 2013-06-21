@@ -10,7 +10,6 @@ vol. 20, no. 1, pp. 47-69, 2009.
 @license: GPL-3
 """
 import yaml
-import argparse
 from time import time
 from copy import deepcopy
 from pprint import pprint
@@ -109,7 +108,6 @@ class ScottMethod(object):
 
         # setup the camera model.
         self.exp = Experiment(zoom=False)
-        # TODO: Load Scott's range model and coverage model.
         self.exp.execute('loadmodel %s' % model_file)
         self.exp.execute('loadconfig %s' % '')
 
@@ -129,6 +127,8 @@ class ScottMethod(object):
         """
         The main experiment.
         """
+        print type(self.cam)
+
         # Generate the scene point from the scene directly.
         scene_points = self.gen_scene_points(list(self.model['CAD'].triangles))
         scene_points_c = PointCache()
@@ -277,15 +277,3 @@ class ScottMethod(object):
                 vis_matrix[i,j] = self.cam.strength(scene_points[i], \
                     self.laser.pose, self.task_par)
         return vis_matrix
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('model', help='Yaml model file.')
-    parser.add_argument('lut', help='Lens calibration file.')
-    parser.add_argument('--vis', type=bool, default=False, \
-        help='Eneble the visualization.')
-    args = parser.parse_args()
-
-    experiment = ScottMethod(args.model, args.lut, args.vis)
-    x = raw_input('Press Enter to begin.\n')
-    experiment.run()
