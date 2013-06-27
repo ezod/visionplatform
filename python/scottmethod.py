@@ -4,11 +4,15 @@ Implementation of Scott's viewpoint selection method.
 * W. R. Scott, "Model-Based View Planning," Machine Vision and Applications,
 vol. 20, no. 1, pp. 47-69, 2009.
 
+* W. R. Scott, "Performance-oriented view planning for automated object
+reconstruction," Ph.D. Thesis, University of Ottawa, 2002.
+
 @author: Jose Alarcon
 @organization: University of Windsor
 @contact: alarconj@uwindsor.ca
 @license: GPL-3
 """
+import os
 import yaml
 from time import time
 from copy import deepcopy
@@ -17,9 +21,12 @@ from numpy import array, zeros, matrix, linalg
 from math import pi, sqrt, sin, cos, asin, acos, atan2
 
 from adolphus.interface import Experiment
-from adolphus.coverage import PointCache, Camera, Task
-from adolphus.geometry import gaussian_pose_error, DirectionalPoint
+from adolphus.coverage import PointCache
+from adolphus.geometry import DirectionalPoint
+from adolphus.yamlparser import YAMLParser
 from adolphus.geometry import Angle, Point, Quaternion, Rotation, Pose
+
+from othermodels import modeltypes, ScottTask
 
 
 def avg_points(X):
@@ -87,6 +94,32 @@ def read_csv(filename, field_names=None):
                     csv_dict[field] = [float(item)]
     return csv_dict, field_names
 
+class ScottParser(YAMLParser):
+    """\
+    Custom yaml parser.
+    """
+    def __init__(self, filename, modeltypes):
+        """\
+        Constructor.
+
+        @param filename: The YAML file to load from.
+        @type filename: C{str}
+        @param modeltypes: The model types.
+        @type modeltypes: C{dict}
+        """
+        self._path = os.path.split(filename)[0]
+        self._mounts = {}
+        experiment = yaml.load(open(filename))
+        try:
+            modeltype = modeltypes[experiment['type']]
+        except KeyError:
+            modeltype = modeltypes['standard']
+        self.model = self._parse_model(experiment['model'], modeltype)
+        self.tasks = {}
+        if 'tasks' in experiment:
+            for task in experiment['tasks']:
+                self.tasks[task['name']] = self._parse_task(task, modeltype)
+
 class ScottMethod(object):
     """
     Scott's viewpoint selection method and experiment class.
@@ -108,7 +141,7 @@ class ScottMethod(object):
 
         # setup the camera model.
         self.exp = Experiment(zoom=False)
-        self.exp.execute('loadmodel %s' % model_file)
+        self.loadmodel(model_file)
         self.exp.execute('loadconfig %s' % '')
 
         # Some shortcuts.
@@ -127,14 +160,13 @@ class ScottMethod(object):
         """
         The main experiment.
         """
-        print type(self.cam)
-
         # Generate the scene point from the scene directly.
-        scene_points = self.gen_scene_points(list(self.model['CAD'].triangles))
+        scene_points = self.gen_scene_points(list(self.model['CAD'].triangles), \
+            1.2217)
         scene_points_c = PointCache()
         for point in scene_points:
             scene_points_c[point] = 1.0
-        self.tasks['T'] = Task(self.task_par, scene_points_c)
+        self.tasks['T'] = ScottTask(self.task_par, scene_points_c)
 
         # Visualize scene points.
         if self.vis:
@@ -154,6 +186,36 @@ class ScottMethod(object):
         # Generate the measurability matrix.
         m_matrix = self.gen_visual_matrix(view_points, view_point_poses, scene_points)
 
+        # Select the viewpoint with the highest coverage from
+        # the measurability matrix.
+        viewpoint = view_point_poses[self.select_viewpoints(m_matrix)]
+
+        # Visualize the results.
+        self.laser.pose = viewpoint
+        if self.vis:
+            self.model.update_visualization()
+        print viewpoint
+
+    def loadmodel(self, model_file):
+        """\
+        Load a model from a YAML file.
+
+        @param model_file: The YAML file to load the camera model.
+        @type model_file: C{str}
+        """
+        self.exp.execute('clear %s' % '')
+        self.exp.execute('modify %s' % '')
+        self.exp.execute('cameraview %s' % '')
+        self.exp.execute('cameranames %s' % '')
+        self.exp.execute('hidetasks %s' % '')
+        for sceneobject in self.exp.model:
+            self.exp.model[sceneobject].visible = False
+            for triangle in self.exp.model[sceneobject].triangles:
+                triangle.visible = False
+        self.exp.model, self.exp.tasks = ScottParser(model_file, modeltypes).experiment
+        self.exp.model.visualize()
+        self.exp.display.select()
+
     def update_camera(self, index):
         """
         Update the camera parameters.
@@ -168,7 +230,7 @@ class ScottMethod(object):
         self.cam.setparam('o', o)
         self.cam.setparam('zS', self.lens_dict['zS'][index])
 
-    def gen_scene_points(self, triangles):
+    def gen_scene_points(self, triangles, threshold):
         """\
         Generate the directional points that model the task from the list of
         triangles of the associated CAD file as given by the raw triangle
@@ -176,6 +238,8 @@ class ScottMethod(object):
 
         @param triangles: The collection of triangles in the model representation.
         @type triangles: C{list} of L{adolphus.geometry.Triangle}
+        @param threshold: The inclination angle threshold.
+        @type threshold: C{float}
         @return: A list of directional points.
         @rtype: C{list} of L{DirectionalPoint}
         """
@@ -184,8 +248,11 @@ class ScottMethod(object):
             triangle = occ_triangle.mapped_triangle()
             average = avg_points(triangle.vertices)
             normal = triangle.normal()
+            rho = normal.angle(Point(0, 0, 1))
+            if rho > threshold:
+                continue
             points.append(DirectionalPoint(average.x, average.y, average.z, \
-                normal.angle(Point(0, 0, 1)), atan2(normal.y, normal.x)))
+                rho, atan2(normal.y, normal.x)))
         return points
 
     def gen_view_points(self, scene_points, mode='flat'):
@@ -274,6 +341,30 @@ class ScottMethod(object):
                 # This assumes that the camera is mounted on the laser and both
                 # move simultaneously. See Scott 2009, Section 2.3.1.
                 self.laser.pose = view_point_poses[j]
-                vis_matrix[i,j] = self.cam.strength(scene_points[i], \
-                    self.laser.pose, self.task_par)
+                try:
+                    strength = self.cam.strength(scene_points[i], \
+                        self.laser.pose, self.task_par)
+                except ValueError:
+                    strength = 0.0
+                vis_matrix[i,j] = strength
         return vis_matrix
+
+    def select_viewpoints(self, matrix):
+        """\
+        Perform set viewpoint selection on the measurability matrix by computing a
+        Figure of Merit for each viewpoint as the total of covered points and selecting
+        the viewpoint with the highest FOM. See Scott 2002, Section 4.4.2.
+
+        @param matrix: The measurability matrix.
+        @type matrix: L{numpy.array}
+        @return: The selected viewpoint.
+        @rtype: C{int}
+        """
+        coverage = sum(matrix)
+        best = 0
+        index = 0
+        for i in range(len(coverage)):
+            if coverage[i] > best:
+                best = coverage[i]
+                index = i
+        return index

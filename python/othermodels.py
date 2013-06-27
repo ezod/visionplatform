@@ -161,7 +161,7 @@ class ScottTask(RangeTask):
         - C{sample_density}: The number of samples along the transport direction
                              in one range image.
     """
-    defaults = copy(Task.defaults)
+    defaults = copy(RangeTask.defaults)
     defaults['sample_density'] = 512
 
 class ScottCamera(RangeCamera):
@@ -176,7 +176,7 @@ class ScottCamera(RangeCamera):
         The general model is presented in [Scott 2009], however many implementation
         details are drawn from [Scott 2002] and [El-Hakim 1995].
     """
-    def unit_step(x):
+    def unit_step(self, x):
         """\
         This function implements the unit step, and is implemented mainly
         for ease of readability.
@@ -188,7 +188,7 @@ class ScottCamera(RangeCamera):
         """
         return 0 if x <= 0 else 1
 
-    def mp(cp, theta_xz, theta_yz):
+    def mp(self, cp, theta_xz, theta_yz):
         """\
         Measurement precision.
 
@@ -224,7 +224,7 @@ class ScottCamera(RangeCamera):
             sigma_z = 0
         return sigma_z
 
-    def sd(cp, laser_pose, task_params, theta_xz, theta_yz):
+    def sd(self, cp, laser_pose, task_params, theta_xz, theta_yz):
         """\
         Sampling density.
 
@@ -302,7 +302,7 @@ class ScottCamera(RangeCamera):
         # direction.
         theta_yz = Point(0., 0., 1.).angle(temp_p)
         temp_p = Point(point.direction_unit().x, 0., point.direction_unit().z)
-        theta_xy = Point(0., 0., 1.).angle(temp_p)
+        theta_xz = Point(0., 0., 1.).angle(temp_p)
 
         return self.cv(cp, task_params) * \
             self.unit_step(self.mp(cp, theta_xz, theta_yz)) * \
