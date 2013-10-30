@@ -14,34 +14,17 @@ reconstruction," Ph.D. Thesis, University of Ottawa, 2002.
 """
 import os
 import yaml
-from time import time
-from copy import deepcopy
-from pprint import pprint
-from numpy import array, zeros, matrix, linalg
-from math import pi, sqrt, sin, cos, asin, acos, atan2
+from numpy import zeros
+from math import pi, sin, cos, atan2
 
-from adolphus.interface import Experiment
 from adolphus.coverage import PointCache
-from adolphus.geometry import DirectionalPoint
+from adolphus.interface import Experiment
 from adolphus.yamlparser import YAMLParser
+from adolphus.geometry import DirectionalPoint, avg_points
 from adolphus.geometry import Angle, Point, Quaternion, Rotation, Pose
 
 from othermodels import modeltypes, ScottTask
 
-
-def avg_points(X):
-    """
-    Average a list of 3D points.
-
-    @param X: The 3D points.
-    @type X: C{List} of L{Point}
-    @return: The average.
-    @rtype: L{Point}
-    """
-    avg = Point(0,0,0)
-    for p in X:
-        avg += p
-    return avg / float(len(X))
 
 def read_csv(filename, field_names=None):
     """\
