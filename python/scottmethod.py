@@ -270,12 +270,12 @@ class ScottMethod(object):
         self.update_camera(index)
         # This implementation assumes that the camera is mounted on the laser
         # and it is in fact the laser that moves.
-        self.cam.mount = self.laser
+        self.laser.mount = self.cam
         T = Point(0, cam_standoff * sin(0.7853), 0)
         R = Rotation.from_euler('zyx', (Angle(-0.7853), Angle(0), Angle(0)))
-        self.cam.set_relative_pose(Pose(T, R))
+        self.laser.set_relative_pose(Pose(T, R))
         # The laser standoff.
-        standoff = cam_standoff * cos(0.7853)
+        standoff = cam_standoff * cos(0.0)
         for point in scene_points:
             x = point.x + (standoff * sin(point.rho) * cos(point.eta))
             y = point.y + (standoff * sin(point.rho) * sin(point.eta))
@@ -304,7 +304,8 @@ class ScottMethod(object):
             view_point_poses.append(new_pose)
         return view_points, view_point_poses
 
-    def gen_visual_matrix(self, view_points, view_point_poses, scene_points):
+    def gen_visual_matrix(self, view_points, view_point_poses, scene_points, \
+        sceneobj=None):
         """\
         Compute the measurability matrix.
 
@@ -314,16 +315,34 @@ class ScottMethod(object):
         @type view_point_poses: C{list}
         @param scene_points: the list of scene points in the task model.
         @type scene_points: C{list}
+        @param sceneobj: The name of the object containing the occlusion triangles.
+        @type sceneobj: C{str}
         @return: the visual matrix whose entries represent coverage strength.
         @rtype: L{numpy.array}
         """
-        num_points = len(view_points)
-        vis_matrix = zeros((num_points, num_points))
-        for i in range(num_points):
-            for j in range(num_points):
-                # This assumes that the camera is mounted on the laser and both
-                # move simultaneously. See Scott 2009, Section 2.3.1.
-                self.laser.pose = view_point_poses[j]
+        if sceneobj:
+            solid = self.model[sceneobj]
+            f = len(solid.faces)
+        else:
+            solid = None
+        n = len(scene_points)
+        v = len(view_points)
+        vis_matrix = zeros((n, v))
+        for i in range(n):
+            for j in range(v):
+                if solid:
+                    occluded = False
+                    for k in xrange(f):
+                        if solid.faces[k].intersection(scene_points[i], \
+                            view_points[j], True):
+                            occluded = True
+                            break
+                    if occluded:
+                        continue
+                elif i == j:
+                    vis_matrix[i,j] = 1.0
+                    continue
+                self.cam.pose = view_point_poses[j]
                 try:
                     strength = self.cam.strength(scene_points[i], \
                         self.laser.pose, self.task_par)
