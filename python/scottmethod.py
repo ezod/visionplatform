@@ -280,8 +280,6 @@ class ScottMethod(object):
         T = Point(0, cam_standoff * tan(0.7853), 0)
         R = Rotation.from_euler('zyx', (Angle(-0.7853), Angle(0), Angle(0)))
         self.laser.set_relative_pose(Pose(T, R))
-        print z_lim
-        x=input()
         # The laser standoff.
         standoff = cam_standoff
         for point in scene_points:
