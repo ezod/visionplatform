@@ -15,7 +15,7 @@ reconstruction," Ph.D. Thesis, University of Ottawa, 2002.
 import os
 import yaml
 from numpy import zeros
-from math import pi, sin, cos, atan2
+from math import pi, sin, cos, atan2, tan
 
 from adolphus.coverage import PointCache
 from adolphus.interface import Experiment
@@ -174,7 +174,7 @@ class ScottMethod(object):
         viewpoint = view_point_poses[self.select_viewpoints(m_matrix)]
 
         # Visualize the results.
-        self.laser.pose = viewpoint
+        self.cam.pose = viewpoint
         if self.vis:
             self.model.update_visualization()
         print viewpoint
@@ -264,18 +264,26 @@ class ScottMethod(object):
             if abs(zS - (f_d * R_o)) < e:
                 e = abs(zS - (f_d * R_o))
                 index = self.lens_dict['zS'].index(zS)
-        cam_standoff = self.lens_dict['zS'][index]
         # Updating the camera after computing the camera standoff distance simulates
         # the action of focusing the lens.
         self.update_camera(index)
         # This implementation assumes that the camera is mounted on the laser
         # and it is in fact the laser that moves.
+        z_lim = [max(self.cam.zres(self.task_par['res_max'][1]),
+                     self.cam.zc(self.task_par['blur_max'][1] * \
+                     min(self.cam_par['s']))[0]),
+                 min(self.cam.zres(self.task_par['res_min'][1]),
+                     self.cam.zc(self.task_par['blur_max'][1] * \
+                     min(self.cam_par['s']))[1])]
+        cam_standoff = sum(z_lim)/2.0
         self.laser.mount = self.cam
-        T = Point(0, cam_standoff * sin(0.7853), 0)
+        T = Point(0, cam_standoff * tan(0.7853), 0)
         R = Rotation.from_euler('zyx', (Angle(-0.7853), Angle(0), Angle(0)))
         self.laser.set_relative_pose(Pose(T, R))
+        print z_lim
+        x=input()
         # The laser standoff.
-        standoff = cam_standoff * cos(0.0)
+        standoff = cam_standoff
         for point in scene_points:
             x = point.x + (standoff * sin(point.rho) * cos(point.eta))
             y = point.y + (standoff * sin(point.rho) * sin(point.eta))
