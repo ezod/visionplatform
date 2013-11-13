@@ -175,7 +175,7 @@ class ScottMethod(object):
 
         # Select the viewpoints with the highest coverage from
         # the measurability matrix.
-        resindex = self.select_viewpoints(m_matrix, self.numc)
+        resindex = self.select_viewpoints(m_matrix)
         viewres = []
         print resindex
         for i in resindex:
