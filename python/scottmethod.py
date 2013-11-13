@@ -15,7 +15,7 @@ reconstruction," Ph.D. Thesis, University of Ottawa, 2002.
 import os
 import yaml
 from numpy import zeros
-from math import pi, sin, cos, atan2, tan
+from math import pi, sin, cos, tan, atan2
 
 from adolphus.coverage import PointCache
 from adolphus.interface import Experiment
@@ -107,7 +107,7 @@ class ScottMethod(object):
     """
     Scott's viewpoint selection method and experiment class.
     """
-    def __init__(self, model_file, lens_lut, vis=False):
+    def __init__(self, model_file, lens_lut, numc=1, vis=False):
         """
         Constructor.
 
@@ -115,11 +115,14 @@ class ScottMethod(object):
         @type model_file: C{str}
         @param lens_list: List of lenses for optimization.
         @type lens_list: C{list} of C{dict}
+        @param numc: The number of cameras to select.
+        @type numc: C{int}
         @param vis: Enable visualization.
         @type vis: C{bool}
         """
         csv_dict, field_names = read_csv(lens_lut)
         self.lens_dict = csv_dict
+        self.numc = numc
         self.vis = vis
 
         # setup the camera model.
@@ -145,7 +148,7 @@ class ScottMethod(object):
         """
         # Generate the scene point from the scene directly.
         scene_points = self.gen_scene_points(list(self.model['CAD'].triangles), \
-            1.2217)
+            pi/2.0)
         scene_points_c = PointCache()
         for point in scene_points:
             scene_points_c[point] = 1.0
@@ -167,17 +170,27 @@ class ScottMethod(object):
             view_points_c.visualize()
 
         # Generate the measurability matrix.
-        m_matrix = self.gen_visual_matrix(view_points, view_point_poses, scene_points)
+        m_matrix = self.gen_visual_matrix(view_points, view_point_poses, \
+            scene_points, "CAD")
 
-        # Select the viewpoint with the highest coverage from
+        # Select the viewpoints with the highest coverage from
         # the measurability matrix.
-        viewpoint = view_point_poses[self.select_viewpoints(m_matrix)]
+        resindex = self.select_viewpoints(m_matrix, self.numc)
+        viewres = []
+        print resindex
+        for i in resindex:
+            viewpoint = view_point_poses[i]
 
-        # Visualize the results.
-        self.cam.pose = viewpoint
-        if self.vis:
-            self.model.update_visualization()
-        print viewpoint
+            # Visualize the results.
+            self.cam.pose = viewpoint
+            if self.vis:
+                self.model.update_visualization()
+
+            viewres.append(viewpoint)
+            #print viewpoint
+            #x = raw_input()
+
+        return viewres
 
     def loadmodel(self, model_file):
         """\
@@ -275,12 +288,12 @@ class ScottMethod(object):
                  min(self.cam.zres(self.task_par['res_min'][1]),
                      self.cam.zc(self.task_par['blur_max'][1] * \
                      min(self.cam_par['s']))[1])]
-        cam_standoff = sum(z_lim)/2.0
+        cam_standoff = z_lim[1] * 0.9
         self.laser.mount = self.cam
         T = Point(0, cam_standoff * tan(0.7853), 0)
         R = Rotation.from_euler('zyx', (Angle(-0.7853), Angle(0), Angle(0)))
         self.laser.set_relative_pose(Pose(T, R))
-        # The laser standoff.
+        # The camera standoff.
         standoff = cam_standoff
         for point in scene_points:
             x = point.x + (standoff * sin(point.rho) * cos(point.eta))
@@ -368,11 +381,22 @@ class ScottMethod(object):
         @return: The selected viewpoint.
         @rtype: C{int}
         """
-        coverage = sum(matrix)
-        best = 0
-        index = 0
-        for i in range(len(coverage)):
-            if coverage[i] > best:
-                best = coverage[i]
-                index = i
-        return index
+        index_res = []
+        size = len(matrix)
+        for dog in range(size):
+            coverage = sum(matrix)
+            best = 0
+            index = 0
+            for i in range(size):
+                if coverage[i] > best:
+                    best = coverage[i]
+                    index = i
+            index_res.append(index)
+
+            if dog == (self.numc - 1) or best == 0:
+                break
+            for duck in range(size):
+                if matrix[duck,index] != 0:
+                    for rowduck in range(size):
+                        matrix[duck,rowduck] = 0
+        return index_res
