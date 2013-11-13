@@ -358,7 +358,7 @@ class ScottMethod(object):
                             break
                     if occluded:
                         continue
-                elif i == j:
+                if i == j:
                     vis_matrix[i,j] = 1.0
                     continue
                 self.cam.pose = view_point_poses[j]
