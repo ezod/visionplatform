@@ -147,8 +147,7 @@ class ScottMethod(object):
         The main experiment.
         """
         # Generate the scene point from the scene directly.
-        scene_points = self.gen_scene_points(list(self.model['CAD'].triangles), \
-            pi/2.0)
+        scene_points = self.gen_scene_points(self.model['CAD'].faces, pi/2)
         scene_points_c = PointCache()
         for point in scene_points:
             scene_points_c[point] = 1.0
@@ -177,7 +176,6 @@ class ScottMethod(object):
         # the measurability matrix.
         resindex = self.select_viewpoints(m_matrix)
         viewres = []
-        print resindex
         for i in resindex:
             viewpoint = view_point_poses[i]
 
@@ -185,12 +183,11 @@ class ScottMethod(object):
             self.cam.pose = viewpoint
             if self.vis:
                 self.model.update_visualization()
+                x = raw_input()
 
             viewres.append(viewpoint)
             #print viewpoint
             #x = raw_input()
-
-        return viewres
 
     def loadmodel(self, model_file):
         """\
@@ -240,15 +237,13 @@ class ScottMethod(object):
         @rtype: C{list} of L{DirectionalPoint}
         """
         points = []
-        for occ_triangle in triangles:
-            triangle = occ_triangle.mapped_triangle()
+        for triangle in triangles:
             average = avg_points(triangle.vertices)
-            normal = triangle.normal()
-            rho = normal.angle(Point(0, 0, 1))
-            if rho > threshold:
+            angles = triangle.normal_angles()
+            if angles[0] > threshold:
                 continue
             points.append(DirectionalPoint(average.x, average.y, average.z, \
-                rho, atan2(normal.y, normal.x)))
+                angles[0], angles[1]))
         return points
 
     def gen_view_points(self, scene_points, mode='flat'):
@@ -379,7 +374,7 @@ class ScottMethod(object):
         @param matrix: The measurability matrix.
         @type matrix: L{numpy.array}
         @return: The selected viewpoint.
-        @rtype: C{int}
+        @rtype: C{list} of C{int}
         """
         index_res = []
         size = len(matrix)
@@ -394,9 +389,9 @@ class ScottMethod(object):
             index_res.append(index)
 
             if dog == (self.numc - 1) or best == 0:
-                break
+                return index_res
             for duck in range(size):
-                if matrix[duck,index] != 0:
+                if matrix[duck, index] != 0:
                     for rowduck in range(size):
                         matrix[duck,rowduck] = 0
         return index_res

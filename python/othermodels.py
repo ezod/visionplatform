@@ -288,11 +288,11 @@ class ScottCamera(RangeCamera):
         @rtype: C{float}
         """
         cp = self.pose.inverse().map(point)
-#         try:
-#             if abs(cp.direction_unit().x) > 1e-4:
-#                 raise ValueError('point is not aligned for range coverage')
-#         except AttributeError:
-#             raise TypeError('point must be directional for range coverage')
+        try:
+            if abs(cp.direction_unit().x) > 1e-4:
+                raise ValueError('point is not aligned for range coverage')
+        except AttributeError:
+            raise TypeError('point must be directional for range coverage')
 
         # theta_yz is the incidence angle in the y-z plane of the laser with respect to
         # the normal of the point's surface (in the global reference frame).
