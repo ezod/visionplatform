@@ -22,6 +22,7 @@ from adolphus.interface import Experiment
 from adolphus.yamlparser import YAMLParser
 from adolphus.geometry import DirectionalPoint, avg_points
 from adolphus.geometry import Angle, Point, Quaternion, Rotation, Pose
+from adolphus.solid import Solid
 
 from othermodels import modeltypes, ScottTask
 
@@ -175,7 +176,7 @@ class ScottMethod(object):
         # Select the viewpoints with the highest coverage from
         # the measurability matrix.
         resindex = self.select_viewpoints(m_matrix)
-        viewres = []
+        viewers = []
         for i in resindex:
             viewpoint = view_point_poses[i]
 
@@ -185,9 +186,11 @@ class ScottMethod(object):
                 self.model.update_visualization()
                 x = raw_input()
 
-            viewres.append(viewpoint)
+            viewers.append(viewpoint)
             #print viewpoint
             #x = raw_input()
+
+        self.save_network('results/result.yaml', viewers)
 
     def loadmodel(self, model_file):
         """\
@@ -304,7 +307,10 @@ class ScottMethod(object):
             pose = Pose(Point(x, y, z), Rotation.from_axis_angle(angle, axis))
             angles = pose.R.to_euler_zyx()
             if mode == 'flat':
-                new_angles = (angles[0], angles[1], Angle(1.5707))
+                if y >= 0:
+                    new_angles = (angles[0], angles[1], Angle(pi))
+                elif y < 0:
+                    new_angles = (angles[0], angles[1], Angle(0))
             elif mode == 'vertical':
                 new_angles = (angles[0], angles[1], Angle(0))
             elif mode == 'alternate':
@@ -395,3 +401,50 @@ class ScottMethod(object):
                     for rowduck in range(size):
                         matrix[duck,rowduck] = 0
         return index_res
+
+    def save_network(self, result_file, network):
+        """\
+        Save the sensor deployment into Adolphus' yaml format.
+
+        @param result_file: The name of the file.
+        @type result_file: C{str}
+        @param network: The poses of the camera network.
+        @type network: C{list} of L{adolphus.geometry.Pose}
+        """
+        with open(result_file, 'w') as result:
+            result.write("model:\n")
+            result.write("    name:           Experiment\n\n")
+            result.write("    cameras:\n")
+            i = 0
+            for pose in network:
+                result.write("        - name:         'C%d'\n" %i)
+                result.write("          sprites:      ['cameras/prosilicaec1350.yaml', 'lenses/computarm3z1228cmp.yaml']\n")
+                result.write("          A:            %.2f\n" %self.cam_par['A'])
+                result.write("          f:            %d\n" %self.cam_par['f'])
+                result.write("          s:            %.5f\n" %self.cam_par['s'][0])
+                result.write("          o:            [%d, %d]\n" \
+                    %(self.cam_par['o'][0],self.cam_par['o'][1]))
+                result.write("          dim:          [%d, %d]\n" \
+                    %(self.cam_par['dim'][0],self.cam_par['dim'][1]))
+                result.write("          zS:           %.1f\n" %self.cam_par['zS'])
+                result.write("          pose:\n")
+                T = pose.T
+                R = pose.R.Q
+                result.write("              T:            [" +
+                    str(T.x) + ", " + str(T.y) + ", " + str(T.z) + "]\n" +
+                    "              R:            [" +
+                    str(R.a) + ", [" + str(R.v.x) + ", " + str(R.v.y) + ", " + \
+                    str(R.v.z) + "]]\n")
+                result.write("              Rformat:      quaternion\n\n")
+                i += 1
+            result.write("tasks:\n")
+            result.write("    - name:                     'T'\n")
+            result.write("      parameters:\n")
+            result.write("          res_min:              [%.1f, %.1f]\n" \
+                %(self.task_par['res_min'][0], self.task_par['res_min'][1]))
+            result.write("          blur_max:             [%.1f, %.1f]\n" \
+                %(self.task_par['blur_max'][0], self.task_par['blur_max'][1]))
+            result.write("          angle_max:            [%.4f, %.4f]\n" \
+                %(self.task_par['angle_max'][0], self.task_par['angle_max'][1]))
+            result.write("      points:\n")
+            result.write("        - [0, 0, 0]\n\n")
